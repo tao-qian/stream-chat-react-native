@@ -191,7 +191,6 @@ export const ChannelListScreen: React.FC = () => {
                 });
               }}
               options={options}
-              Preview={ChannelPreview}
               setFlatListRef={setScrollRef}
               sort={sort}
             />

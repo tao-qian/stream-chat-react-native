@@ -11,6 +11,7 @@ import {
 import { ChatContextValue, useChatContext } from '../../contexts/chatContext/ChatContext';
 
 import type { DefaultStreamChatGenerics } from '../../types/types';
+import { atom, PrimitiveAtom, useAtom } from 'jotai';
 
 export type ChannelPreviewPropsWithContext<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -19,7 +20,7 @@ export type ChannelPreviewPropsWithContext<
     /**
      * The previewed channel
      */
-    channel: Channel<StreamChatGenerics>;
+    channel: PrimitiveAtom<Channel<StreamChatGenerics>>;
   };
 
 /**
@@ -31,7 +32,27 @@ const ChannelPreviewWithContext = <
 >(
   props: ChannelPreviewPropsWithContext<StreamChatGenerics>,
 ) => {
-  const { channel, client, Preview } = props;
+  const { channel: channelAtom, client, Preview } = props;
+
+  // const modifyableChannelAtom = atom(
+  //   (get) => get(channelAtom),
+  //   (get, set, update) => {
+  //     const nextValue = typeof update === 'function' ? update(get(baseAtom)) : update;
+  //     set(channelAtom, nextValue);
+  //   },
+  // );
+
+  const [channel, setChannel] = useAtom(channelAtom);
+
+  console.log(`cid: ${channel.cid}`);
+  useEffect(() => {
+    if (channel.cid === 'messaging:sample-app-channel-11') {
+      setTimeout(() => {
+        console.log('Calling timeout');
+        setChannel({ ...channel });
+      }, 3000);
+    }
+  }, []);
 
   const [lastMessage, setLastMessage] = useState<
     | ReturnType<ChannelState<StreamChatGenerics>['formatMessage']>
@@ -39,11 +60,11 @@ const ChannelPreviewWithContext = <
     | undefined
   >(channel.state.messages[channel.state.messages.length - 1]);
   const [forceUpdate, setForceUpdate] = useState(0);
-  const [unread, setUnread] = useState(channel.countUnread());
+  const [unread, setUnread] = useState(0);
 
   const latestMessagePreview = useLatestMessagePreview(channel, forceUpdate, lastMessage);
 
-  const channelLastMessage = channel.lastMessage();
+  const channelLastMessage = lastMessage;
   const channelLastMessageString = `${channelLastMessage?.id}${channelLastMessage?.updated_at}`;
 
   useEffect(() => {
@@ -55,7 +76,7 @@ const ChannelPreviewWithContext = <
       setLastMessage(channelLastMessage);
     }
 
-    const newUnreadCount = channel.countUnread();
+    const newUnreadCount = 0; //channel.countUnread();
 
     if (newUnreadCount !== unread) {
       setUnread(newUnreadCount);
@@ -73,14 +94,14 @@ const ChannelPreviewWithContext = <
       }
     };
 
-    channel.on('message.new', handleEvent);
-    channel.on('message.updated', handleEvent);
-    channel.on('message.deleted', handleEvent);
+    // channel.on('message.new', handleEvent);
+    // channel.on('message.updated', handleEvent);
+    // channel.on('message.deleted', handleEvent);
 
     return () => {
-      channel.off('message.new', handleEvent);
-      channel.off('message.updated', handleEvent);
-      channel.off('message.deleted', handleEvent);
+      // channel.off('message.new', handleEvent);
+      // channel.off('message.updated', handleEvent);
+      // channel.off('message.deleted', handleEvent);
     };
   }, []);
 
@@ -93,8 +114,8 @@ const ChannelPreviewWithContext = <
       }
     };
 
-    channel.on('message.read', handleReadEvent);
-    return () => channel.off('message.read', handleReadEvent);
+    // channel.on('message.read', handleReadEvent);
+    // return () => channel.off('message.read', handleReadEvent);
   }, []);
 
   return <Preview channel={channel} latestMessagePreview={latestMessagePreview} unread={unread} />;

@@ -20,6 +20,7 @@ import {
 import { useTheme } from '../../contexts/themeContext/ThemeContext';
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { vw } from '../../utils/utils';
+import type { Channel } from 'stream-chat';
 
 const styles = StyleSheet.create({
   container: {
@@ -48,57 +49,57 @@ const maxWidth = vw(80) - 16 - 40;
 
 export type ChannelPreviewMessengerPropsWithContext<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
-> = Pick<ChannelPreviewProps<StreamChatGenerics>, 'channel'> &
-  Pick<
-    ChannelsContextValue<StreamChatGenerics>,
-    | 'maxUnreadCount'
-    | 'onSelect'
-    | 'PreviewAvatar'
-    | 'PreviewMessage'
-    | 'PreviewMutedStatus'
-    | 'PreviewStatus'
-    | 'PreviewTitle'
-    | 'PreviewUnreadCount'
-  > & {
-    /**
-     * Latest message on a channel, formatted for preview
-     *
-     * e.g.,
-     *
-     * ```json
-     * {
-     *  created_at: '' ,
-     *  messageObject: { ... },
-     *  previews: {
-     *    bold: true,
-     *    text: 'This is the message preview text'
-     *  },
-     *  status: 0 | 1 | 2 // read states of the latest message.
-     * }
-     * ```
-     *
-     * The read status is either of the following:
-     *
-     * 0: The message was not sent by the current user
-     * 1: The message was sent by the current user and is unread
-     * 2: The message was sent by the current user and is read
-     *
-     * @overrideType object
-     */
-    latestMessagePreview: LatestMessagePreview<StreamChatGenerics>;
-    /**
-     * Formatter function for date of latest message.
-     * @param date Message date
-     * @returns Formatted date string
-     *
-     * By default today's date is shown in 'HH:mm A' format and other dates
-     * are displayed in 'DD/MM/YY' format. props.latestMessage.created_at is the
-     * default formatted date. This default logic is part of ChannelPreview component.
-     */
-    formatLatestMessageDate?: (date: Date) => string;
-    /** Number of unread messages on the channel */
-    unread?: number;
-  };
+> = Pick<
+  ChannelsContextValue<StreamChatGenerics>,
+  | 'maxUnreadCount'
+  | 'onSelect'
+  | 'PreviewAvatar'
+  | 'PreviewMessage'
+  | 'PreviewMutedStatus'
+  | 'PreviewStatus'
+  | 'PreviewTitle'
+  | 'PreviewUnreadCount'
+> & {
+  channel: Channel<StreamChatGenerics>;
+  /**
+   * Latest message on a channel, formatted for preview
+   *
+   * e.g.,
+   *
+   * ```json
+   * {
+   *  created_at: '' ,
+   *  messageObject: { ... },
+   *  previews: {
+   *    bold: true,
+   *    text: 'This is the message preview text'
+   *  },
+   *  status: 0 | 1 | 2 // read states of the latest message.
+   * }
+   * ```
+   *
+   * The read status is either of the following:
+   *
+   * 0: The message was not sent by the current user
+   * 1: The message was sent by the current user and is unread
+   * 2: The message was sent by the current user and is read
+   *
+   * @overrideType object
+   */
+  latestMessagePreview: LatestMessagePreview<StreamChatGenerics>;
+  /**
+   * Formatter function for date of latest message.
+   * @param date Message date
+   * @returns Formatted date string
+   *
+   * By default today's date is shown in 'HH:mm A' format and other dates
+   * are displayed in 'DD/MM/YY' format. props.latestMessage.created_at is the
+   * default formatted date. This default logic is part of ChannelPreview component.
+   */
+  formatLatestMessageDate?: (date: Date) => string;
+  /** Number of unread messages on the channel */
+  unread?: number;
+};
 
 const ChannelPreviewMessengerWithContext = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -132,7 +133,7 @@ const ChannelPreviewMessengerWithContext = <
     Math.floor(maxWidth / ((title.fontSize || styles.title.fontSize) / 2)),
   );
 
-  const isChannelMuted = channel.muteStatus().muted;
+  const isChannelMuted = false; // channel.muteStatus().muted;
 
   return (
     <TouchableOpacity

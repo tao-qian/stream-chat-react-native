@@ -32,6 +32,7 @@ import type { DefaultStreamChatGenerics } from '../../types/types';
 import { ChannelPreviewMessenger } from '../ChannelPreview/ChannelPreviewMessenger';
 import { EmptyStateIndicator as EmptyStateIndicatorDefault } from '../Indicators/EmptyStateIndicator';
 import { LoadingErrorIndicator as LoadingErrorIndicatorDefault } from '../Indicators/LoadingErrorIndicator';
+import { useChannelsAtom } from '../../store/channels';
 
 export type ChannelListProps<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -243,7 +244,6 @@ export const ChannelList = <
   const [forceUpdate, setForceUpdate] = useState(0);
 
   const {
-    channels,
     error,
     hasNextPage,
     loadingChannels,
@@ -252,69 +252,69 @@ export const ChannelList = <
     refreshing,
     refreshList,
     reloadList,
-    setChannels,
   } = usePaginatedChannels<StreamChatGenerics>({
     filters,
     options,
     sort,
   });
 
+  const [channels, setChannels] = useChannelsAtom();
+
   // Setup event listeners
-  useAddedToChannelNotification({
-    onAddedToChannel,
-    setChannels,
-  });
+  // useAddedToChannelNotification({
+  //   onAddedToChannel,
+  // });
 
-  useChannelDeleted({
-    onChannelDeleted,
-    setChannels,
-  });
+  // useChannelDeleted({
+  //   onChannelDeleted,
+  //   setChannels,
+  // });
 
-  useChannelHidden({
-    onChannelHidden,
-    setChannels,
-  });
+  // useChannelHidden({
+  //   onChannelHidden,
+  //   setChannels,
+  // });
 
-  useChannelTruncated({
-    onChannelTruncated,
-    refreshList,
-    setChannels,
-    setForceUpdate,
-  });
+  // useChannelTruncated({
+  //   onChannelTruncated,
+  //   refreshList,
+  //   setChannels,
+  //   setForceUpdate,
+  // });
 
-  useChannelUpdated({
-    onChannelUpdated,
-    setChannels,
-  });
+  // useChannelUpdated({
+  //   onChannelUpdated,
+  //   setChannels,
+  // });
 
-  useChannelVisible({
-    onChannelVisible,
-    setChannels,
-  });
+  // useChannelVisible({
+  //   onChannelVisible,
+  //   setChannels,
+  // });
 
-  useConnectionRecovered<StreamChatGenerics>({
-    refreshList,
-    setForceUpdate,
-  });
+  // useConnectionRecovered<StreamChatGenerics>({
+  //   refreshList,
+  //   setForceUpdate,
+  // });
 
-  useNewMessage({
-    lockChannelOrder,
-    setChannels,
-  });
+  // useNewMessage({
+  //   lockChannelOrder,
+  //   setChannels,
+  // });
 
-  useNewMessageNotification({
-    onMessageNew,
-    setChannels,
-  });
+  // useNewMessageNotification({
+  //   onMessageNew,
+  //   setChannels,
+  // });
 
-  useRemovedFromChannelNotification({
-    onRemovedFromChannel,
-    setChannels,
-  });
+  // useRemovedFromChannelNotification({
+  //   onRemovedFromChannel,
+  //   setChannels,
+  // });
 
-  useUserPresence({
-    setChannels,
-  });
+  // useUserPresence({
+  //   setChannels,
+  // });
 
   const channelsContext = useCreateChannelsContext({
     additionalFlatListProps,

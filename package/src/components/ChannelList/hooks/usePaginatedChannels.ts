@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Channel, ChannelFilters, ChannelOptions, ChannelSort } from 'stream-chat';
 
+import { atom, useAtom } from 'jotai';
+
 import { useActiveChannelsRefContext } from '../../../contexts/activeChannelsRefContext/ActiveChannelsRefContext';
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 import { useIsMountedRef } from '../../../hooks/useIsMountedRef';
@@ -9,6 +11,7 @@ import { useIsMountedRef } from '../../../hooks/useIsMountedRef';
 import type { DefaultStreamChatGenerics } from '../../../types/types';
 import { ONE_SECOND_IN_MS } from '../../../utils/date';
 import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
+import { channelsAtom, useChannelsAtom, useDerivedAtom } from '../../../store/channels';
 
 const waitSeconds = (seconds: number) =>
   new Promise((resolve) => {
@@ -40,7 +43,7 @@ export const usePaginatedChannels = <
   sort = {},
 }: Parameters<StreamChatGenerics>) => {
   const { client } = useChatContext<StreamChatGenerics>();
-  const [channels, setChannels] = useState<Channel<StreamChatGenerics>[]>([]);
+  const [channels, setChannels] = useDerivedAtom();
   const activeChannels = useActiveChannelsRefContext();
 
   const [error, setError] = useState<Error>();

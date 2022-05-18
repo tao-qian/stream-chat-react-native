@@ -8,6 +8,7 @@ import { useChatContext } from '../../../../contexts/chatContext/ChatContext';
 
 import type { DefaultStreamChatGenerics } from '../../../../types/types';
 import { getChannel } from '../../utils';
+import { useChannelsAtom } from '../../../../store/channels';
 
 type Parameters<StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics> =
   {
@@ -22,9 +23,9 @@ export const useAddedToChannelNotification = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >({
   onAddedToChannel,
-  setChannels,
 }: Parameters<StreamChatGenerics>) => {
   const { client } = useChatContext<StreamChatGenerics>();
+  const [, setChannels] = useChannelsAtom();
 
   useEffect(() => {
     const handleEvent = async (event: Event<StreamChatGenerics>) => {
@@ -37,7 +38,7 @@ export const useAddedToChannelNotification = <
             id: event.channel.id,
             type: event.channel.type,
           });
-          setChannels((channels) => uniqBy([channel, ...channels], 'cid'));
+          setChannels((channels: Channel[]) => uniqBy([channel, ...channels], 'cid'));
         }
       }
     };
