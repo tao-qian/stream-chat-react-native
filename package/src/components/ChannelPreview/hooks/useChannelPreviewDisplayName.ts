@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { Channel } from 'stream-chat';
+import type { ChannelNew } from 'stream-chat-react-native';
 
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 
@@ -9,9 +10,7 @@ import { vw } from '../../../utils/utils';
 
 const maxCharacterLengthDefault = (vw(100) - 16) / 6;
 
-export const getChannelPreviewDisplayName = <
-  StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
->({
+export const getChannelPreviewDisplayName = ({
   channelName,
   currentUserId,
   maxCharacterLength,
@@ -20,7 +19,7 @@ export const getChannelPreviewDisplayName = <
   maxCharacterLength: number;
   channelName?: string;
   currentUserId?: string;
-  members?: Channel<StreamChatGenerics>['state']['members'];
+  members?: ChannelNew['members'];
 }) => {
   if (channelName) return channelName;
 
@@ -51,15 +50,15 @@ export const getChannelPreviewDisplayName = <
 export const useChannelPreviewDisplayName = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel?: Channel<StreamChatGenerics>,
+  channel?: ChannelNew,
   characterLength?: number,
 ) => {
   const { client } = useChatContext<StreamChatGenerics>();
 
   const currentUserId = client.userID;
-  const members = channel?.state.members;
+  const members = channel?.members;
   const numOfMembers = Object.keys(members || {}).length;
-  const channelName = channel?.data?.name;
+  const channelName = channel?.name;
   const maxCharacterLength = characterLength || maxCharacterLengthDefault;
 
   const [displayName, setDisplayName] = useState(

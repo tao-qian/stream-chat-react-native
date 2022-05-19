@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import type { Channel, ChannelFilters, ChannelOptions, ChannelSort } from 'stream-chat';
+import type {
+  Channel,
+  ChannelFilters,
+  ChannelOptions,
+  ChannelSort,
+  ReadResponse,
+} from 'stream-chat';
 
 import { atom, useAtom } from 'jotai';
 
@@ -11,7 +17,12 @@ import { useIsMountedRef } from '../../../hooks/useIsMountedRef';
 import type { DefaultStreamChatGenerics } from '../../../types/types';
 import { ONE_SECOND_IN_MS } from '../../../utils/date';
 import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
-import { channelsAtom, useChannelsAtom, useDerivedAtom } from '../../../store/channels';
+import {
+  channelsAtom,
+  useChannelsAtom,
+  useDerivedAtom,
+  useMessagesAtom,
+} from '../../../store/channels';
 
 const waitSeconds = (seconds: number) =>
   new Promise((resolve) => {
@@ -95,23 +106,46 @@ export const usePaginatedChannels = <
     };
 
     try {
-      const channelQueryResponse = await client.queryChannels(filters, sort, newOptions, {
+      const channelQueryResponse = await client.queryChannelsRaw(filters, sort, newOptions, {
         skipInitialization: activeChannels.current,
+      });
+
+      const channelsInResponse = channelQueryResponse.channels.map((chan) => {
+        const unreadCountAtom = atom(
+          chan.read?.find((r) => r.user.id === client.userID)?.unread_messages || 0,
+        );
+
+        return {
+          ...chan.channel,
+          messages: chan.messages,
+          unreadCount: atom(
+            (get) => get(unreadCountAtom),
+            (get, set, update) => {
+              const newValue = typeof update === 'function' ? update(get(unreadCountAtom)) : update;
+
+              set(unreadCountAtom, newValue);
+            },
+          ), // TODO: Implement logic related to this, and make this readable
+
+          read: chan.read?.reduce((acc: ReadResponse, current) => ({
+            ...current,
+            [acc.user.id]: acc,
+          })),
+
+          members: chan.members,
+          image: chan.channel.image || '',
+        };
       });
 
       if (isQueryStale() || !isMountedRef.current) {
         return;
       }
 
-      channelQueryResponse.forEach((channel) => channel.state.setIsUpToDate(true));
-
       const newChannels =
-        queryType === 'loadChannels'
-          ? [...channels, ...channelQueryResponse]
-          : channelQueryResponse;
+        queryType === 'loadChannels' ? [...channels, ...channelsInResponse] : channelsInResponse;
 
       setChannels(newChannels);
-      setHasNextPage(channelQueryResponse.length >= newOptions.limit);
+      setHasNextPage(channelsInResponse.length >= newOptions.limit);
       setError(undefined);
       isQueryingRef.current = false;
     } catch (err: unknown) {
@@ -127,6 +161,7 @@ export const usePaginatedChannels = <
       if (retryCount === MAX_NUMBER_OF_RETRIES && !isQueryingRef.current) {
         setActiveQueryType(null);
         console.warn(err);
+        throw new Error(err);
         setError(
           new Error(
             `Maximum number of retries reached in queryChannels. Last error message is: ${err}`,
@@ -176,6 +211,7 @@ export const usePaginatedChannels = <
 
   useEffect(() => {
     reloadList();
+    console.log('Reload called');
   }, [filterStr, sortStr]);
 
   return {

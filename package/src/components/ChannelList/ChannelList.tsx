@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import type { FlatList } from 'react-native-gesture-handler';
+import { useMemo } from 'react';
 
 import type { Channel, ChannelFilters, ChannelOptions, ChannelSort, Event } from 'stream-chat';
 
@@ -33,6 +34,10 @@ import { ChannelPreviewMessenger } from '../ChannelPreview/ChannelPreviewMesseng
 import { EmptyStateIndicator as EmptyStateIndicatorDefault } from '../Indicators/EmptyStateIndicator';
 import { LoadingErrorIndicator as LoadingErrorIndicatorDefault } from '../Indicators/LoadingErrorIndicator';
 import { useChannelsAtom } from '../../store/channels';
+import { atom, useAtom } from 'jotai';
+import { useEffect } from 'react';
+import type { ChannelNew } from 'stream-chat-react-native';
+import { useUpdateAtom } from 'jotai/utils';
 
 export type ChannelListProps<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -199,6 +204,9 @@ const DEFAULT_SORT = {};
  *
  * @example ./ChannelList.md
  */
+
+const countToUpdateAtom = atom(atom(0));
+
 export const ChannelList = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
@@ -243,6 +251,12 @@ export const ChannelList = <
 
   const [forceUpdate, setForceUpdate] = useState(0);
 
+  const db = sqlite.open('scrn', 'databases');
+
+  if (db.status === 1) {
+    console.error('Database could not be opened!');
+  }
+
   const {
     error,
     hasNextPage,
@@ -259,6 +273,33 @@ export const ChannelList = <
   });
 
   const [channels, setChannels] = useChannelsAtom();
+  const [countAtom, setCountAtom] = useAtom(countToUpdateAtom);
+  const setCount = useUpdateAtom(countAtom);
+
+  // const [someChannel] = useAtom(channels[2]);
+  // const [unread, setUnread] = useAtom(someChannel.unreadCount);
+
+  useEffect(() => {
+    if (channels.length > 0) {
+      // setCountAtom(
+      //   atom(
+      //     (get) => get(channels[2]).unreadCount,
+      //     (get, set, update) => {
+      //       const newValue =
+      //         typeof update === 'function' ? update(get(get(channels[2]).unreadCount)) : update;
+      //       set(get(channels[2]).unreadCount, newValue);
+      //     },
+      //   ),
+      // );
+      // setCountAtom(useMemo(atom(2), [2]));
+    }
+
+    // setInterval(() => {
+    //   console.log(`Count: ${count}`);
+    //   setCount((previous) => previous + 1);
+    //   console.log(`Count: ${count}`);
+    // }, 1000);
+  });
 
   // Setup event listeners
   // useAddedToChannelNotification({

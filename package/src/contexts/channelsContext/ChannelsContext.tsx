@@ -6,6 +6,7 @@ import type { FlatList } from 'react-native-gesture-handler';
 import type { ChannelPreviewMutedStatusProps } from 'src/components/ChannelPreview/ChannelPreviewMutedStatus';
 
 import type { Channel } from 'stream-chat';
+import type { ChannelNew } from '../../components/ChannelPreview/ChannelPreview';
 
 import type { HeaderErrorProps } from '../../components/ChannelList/ChannelListHeaderErrorIndicator';
 import type { QueryChannels } from '../../components/ChannelList/hooks/usePaginatedChannels';
@@ -168,7 +169,7 @@ export type ChannelsContextValue<
    *
    * @param channel A channel object
    */
-  onSelect?: (channel: Channel<StreamChatGenerics>) => void;
+  onSelect?: (channel: ChannelNew) => void;
   /**
    * Custom UI component to render preview avatar.
    *

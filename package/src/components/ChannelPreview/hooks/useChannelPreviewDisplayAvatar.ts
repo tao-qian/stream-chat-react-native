@@ -5,18 +5,18 @@ import type { Channel, StreamChat } from 'stream-chat';
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 
 import type { DefaultStreamChatGenerics } from '../../../types/types';
+import type { ChannelNew } from '../ChannelPreview';
 
 export const getChannelPreviewDisplayAvatar = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
   client: StreamChat<StreamChatGenerics>,
 ) => {
   const currentUserId = client?.user?.id;
   const channelId = channel?.id;
-  const channelData = channel?.data;
-  const channelName = channelData?.name;
-  const channelImage = channelData?.image;
+  const channelName = channel.name;
+  const channelImage = channel?.image;
 
   if (channelImage) {
     return {
@@ -25,7 +25,7 @@ export const getChannelPreviewDisplayAvatar = <
       name: channelName,
     };
   } else if (currentUserId) {
-    const members = Object.values(channel.state?.members);
+    const members = Object.values(channel.members);
     const otherMembers = members.filter((member) => member.user?.id !== currentUserId);
 
     if (otherMembers.length === 1) {
@@ -57,13 +57,12 @@ export const getChannelPreviewDisplayAvatar = <
 export const useChannelPreviewDisplayAvatar = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
 ) => {
   const { client } = useChatContext<StreamChatGenerics>();
 
-  const channelData = channel?.data;
-  const image = channelData?.image;
-  const name = channelData?.name;
+  const image = channel?.image;
+  const name = channel?.name;
   const id = client?.user?.id;
 
   const [displayAvatar, setDisplayAvatar] = useState(

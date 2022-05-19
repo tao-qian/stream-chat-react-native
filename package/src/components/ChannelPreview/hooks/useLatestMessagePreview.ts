@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { Channel, ChannelState, MessageResponse, StreamChat } from 'stream-chat';
+import type { ChannelNew } from '../ChannelPreview';
 
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 import {
@@ -32,7 +33,7 @@ export type LatestMessagePreview<
 const getLatestMessageDisplayText = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
   client: StreamChat<StreamChatGenerics>,
   message: LatestMessage<StreamChatGenerics> | undefined,
   t: (key: string) => string,
@@ -42,13 +43,15 @@ const getLatestMessageDisplayText = <
   if (isMessageTypeDeleted) return [{ bold: false, text: t('Message deleted') }];
   const currentUserId = client.userID;
   const messageOwnerId = message.user?.id;
-  const members = Object.keys(channel.state.members);
+  const members = Object.keys(channel.members);
+
   const owner =
     messageOwnerId === currentUserId
       ? t('You')
       : members.length > 2
       ? message.user?.name || message.user?.username || message.user?.id || ''
       : '';
+
   const ownerText = owner ? `${owner === t('You') ? '' : '@'}${owner}: ` : '';
   const boldOwner = ownerText.includes('@');
   if (message.text) {
@@ -124,7 +127,7 @@ export enum MessageReadStatus {
 const getLatestMessageReadStatus = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
   client: StreamChat<StreamChatGenerics>,
   message: LatestMessage<StreamChatGenerics> | undefined,
   readEvents: boolean,
@@ -134,7 +137,7 @@ const getLatestMessageReadStatus = <
     return MessageReadStatus.NOT_SENT_BY_CURRENT_USER;
   }
 
-  const readList = channel.state.read;
+  const readList = channel.read;
   if (currentUserId) {
     delete readList[currentUserId];
   }
@@ -146,7 +149,7 @@ const getLatestMessageReadStatus = <
     : undefined;
 
   return Object.values(readList).some(
-    ({ last_read }) => messageUpdatedAt && messageUpdatedAt < last_read,
+    ({ last_read }) => messageUpdatedAt && messageUpdatedAt < new Date(last_read),
   )
     ? MessageReadStatus.READ
     : MessageReadStatus.UNREAD;
@@ -155,7 +158,7 @@ const getLatestMessageReadStatus = <
 const getLatestMessagePreview = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(params: {
-  channel: Channel<StreamChatGenerics>;
+  channel: ChannelNew;
   client: StreamChat<StreamChatGenerics>;
   readEvents: boolean;
   t: (key: string) => string;
@@ -166,7 +169,7 @@ const getLatestMessagePreview = <
 }) => {
   const { channel, client, lastMessage, readEvents, t, tDateTimeParser } = params;
 
-  const messages = channel.state.messages;
+  const messages = channel.messages;
 
   if (!messages.length && !lastMessage) {
     return {
@@ -201,7 +204,7 @@ const getLatestMessagePreview = <
 export const useLatestMessagePreview = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
   forceUpdate: number,
   lastMessage?:
     | ReturnType<ChannelState<StreamChatGenerics>['formatMessage']>
@@ -212,7 +215,7 @@ export const useLatestMessagePreview = <
 
   const channelConfigExists = typeof channel?.getConfig === 'function';
 
-  const messages = channel.state.messages;
+  const messages = channel.messages;
   const message = messages.length ? messages[messages.length - 1] : undefined;
 
   const channelLastMessageString = `${lastMessage?.id || message?.id}${

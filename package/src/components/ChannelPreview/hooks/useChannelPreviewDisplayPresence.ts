@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import type { Channel, StreamChat } from 'stream-chat';
+import type { StreamChat } from 'stream-chat';
+import type { ChannelNew } from 'stream-chat-react-native';
 
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 
@@ -9,13 +10,13 @@ import type { DefaultStreamChatGenerics } from '../../../types/types';
 const getChannelPreviewDisplayPresence = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
   client: StreamChat<StreamChatGenerics>,
 ) => {
   const currentUserId = client.userID;
 
   if (currentUserId) {
-    const members = Object.values(channel.state.members);
+    const members = Object.values(channel.members);
     const otherMembers = members.filter((member) => member.user?.id !== currentUserId);
 
     if (otherMembers.length === 1) {
@@ -34,12 +35,12 @@ const getChannelPreviewDisplayPresence = <
 export const useChannelPreviewDisplayPresence = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
-  channel: Channel<StreamChatGenerics>,
+  channel: ChannelNew,
 ) => {
   const { client } = useChatContext<StreamChatGenerics>();
 
   const currentUserId = client.userID;
-  const members = Object.values(channel.state.members).filter(
+  const members = Object.values(channel.members).filter(
     (member) => !!member.user?.id && !!currentUserId && member.user?.id !== currentUserId,
   );
   const channelMemberOnline = members.some((member) => member.user?.online);

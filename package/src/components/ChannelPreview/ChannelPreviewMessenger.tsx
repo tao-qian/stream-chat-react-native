@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import { ChannelAvatar } from './ChannelAvatar';
-import type { ChannelPreviewProps } from './ChannelPreview';
+import type { ChannelNew, ChannelPreviewProps } from './ChannelPreview';
 import { ChannelPreviewMessage } from './ChannelPreviewMessage';
 import { ChannelPreviewMutedStatus } from './ChannelPreviewMutedStatus';
 import { ChannelPreviewStatus } from './ChannelPreviewStatus';
@@ -21,6 +21,7 @@ import { useTheme } from '../../contexts/themeContext/ThemeContext';
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { vw } from '../../utils/utils';
 import type { Channel } from 'stream-chat';
+import type { PrimitiveAtom } from 'jotai';
 
 const styles = StyleSheet.create({
   container: {
@@ -52,7 +53,7 @@ export type ChannelPreviewMessengerPropsWithContext<
 > = Pick<
   ChannelsContextValue<StreamChatGenerics>,
   | 'maxUnreadCount'
-  | 'onSelect'
+  | 'onSelect '
   | 'PreviewAvatar'
   | 'PreviewMessage'
   | 'PreviewMutedStatus'
@@ -60,7 +61,7 @@ export type ChannelPreviewMessengerPropsWithContext<
   | 'PreviewTitle'
   | 'PreviewUnreadCount'
 > & {
-  channel: Channel<StreamChatGenerics>;
+  channel: ChannelNew;
   /**
    * Latest message on a channel, formatted for preview
    *
@@ -98,7 +99,7 @@ export type ChannelPreviewMessengerPropsWithContext<
    */
   formatLatestMessageDate?: (date: Date) => string;
   /** Number of unread messages on the channel */
-  unread?: number;
+  unread?: PrimitiveAtom<number>;
 };
 
 const ChannelPreviewMessengerWithContext = <
