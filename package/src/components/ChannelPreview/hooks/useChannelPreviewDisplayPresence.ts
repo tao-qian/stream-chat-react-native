@@ -13,7 +13,7 @@ const getChannelPreviewDisplayPresence = <
   channel: ChannelNew,
   client: StreamChat<StreamChatGenerics>,
 ) => {
-  const currentUserId = client.userID;
+  const currentUserId = client?.userID || '';
 
   if (currentUserId) {
     const members = Object.values(channel.members);
@@ -39,7 +39,7 @@ export const useChannelPreviewDisplayPresence = <
 ) => {
   const { client } = useChatContext<StreamChatGenerics>();
 
-  const currentUserId = client.userID;
+  const currentUserId = client?.userID || ''; // TODO
   const members = Object.values(channel.members).filter(
     (member) => !!member.user?.id && !!currentUserId && member.user?.id !== currentUserId,
   );

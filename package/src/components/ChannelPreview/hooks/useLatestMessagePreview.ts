@@ -41,7 +41,7 @@ const getLatestMessageDisplayText = <
   if (!message) return [{ bold: false, text: t('Nothing yet...') }];
   const isMessageTypeDeleted = message.type === 'deleted';
   if (isMessageTypeDeleted) return [{ bold: false, text: t('Message deleted') }];
-  const currentUserId = client.userID;
+  const currentUserId = client?.userID || '';
   const messageOwnerId = message.user?.id;
   const members = Object.keys(channel.members);
 
@@ -132,7 +132,7 @@ const getLatestMessageReadStatus = <
   message: LatestMessage<StreamChatGenerics> | undefined,
   readEvents: boolean,
 ): MessageReadStatus => {
-  const currentUserId = client.userID;
+  const currentUserId = client?.userID || ''; // TODO
   if (!message || currentUserId !== message.user?.id || readEvents === false) {
     return MessageReadStatus.NOT_SENT_BY_CURRENT_USER;
   }

@@ -15,9 +15,11 @@ export const useCreateChatContext = <
   setActiveChannel,
 }: ChatContextValue<StreamChatGenerics>) => {
   const channelId = channel?.id;
-  const clientValues = `${client.clientID}${Object.keys(client.activeChannels).length}${
-    Object.keys(client.listeners).length
-  }${client.mutedChannels.length}`;
+  const clientValues = client
+    ? `${client.clientID}${Object.keys(client.activeChannels).length}${
+        Object.keys(client.listeners).length
+      }${client.mutedChannels.length}`
+    : 'Offline';
   const mutedUsersLength = mutedUsers.length;
 
   const chatContext: ChatContextValue<StreamChatGenerics> = useMemo(

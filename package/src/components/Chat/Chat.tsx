@@ -151,11 +151,12 @@ const ChatWithContext = <
   useInitializeDatabaseValues();
   /**
    * Setup muted user listener
+   * TODO: reimplement
    */
-  const mutedUsers = useMutedUsers<StreamChatGenerics>(client);
+  const mutedUsers = []; //useMutedUsers<StreamChatGenerics>(client);
 
   useEffect(() => {
-    if (client.setUserAgent) {
+    if (client?.setUserAgent) {
       client.setUserAgent(`${SDK}-${Platform.OS}-${version}`);
       // This is to disable recovery related logic in js client, since we handle it in this SDK
       client.recoverStateOnReconnect = false;

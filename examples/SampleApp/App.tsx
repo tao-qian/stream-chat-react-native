@@ -130,13 +130,7 @@ const App = () => {
         }}
       >
         <AppContext.Provider value={{ chatClient, loginUser, logout, switchUser }}>
-          {isConnecting ? (
-            <LoadingScreen />
-          ) : chatClient ? (
-            <DrawerNavigatorWrapper chatClient={chatClient} />
-          ) : (
-            <UserSelector />
-          )}
+          <DrawerNavigatorWrapper chatClient={chatClient} />
         </AppContext.Provider>
       </NavigationContainer>
     </SafeAreaProvider>
