@@ -12,7 +12,6 @@ import { useChannelsAtom } from '../../../../store/channels';
 
 type Parameters<StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics> =
   {
-    setChannels: React.Dispatch<React.SetStateAction<Channel<StreamChatGenerics>[]>>;
     onAddedToChannel?: (
       setChannels: React.Dispatch<React.SetStateAction<Channel<StreamChatGenerics>[]>>,
       event: Event<StreamChatGenerics>,

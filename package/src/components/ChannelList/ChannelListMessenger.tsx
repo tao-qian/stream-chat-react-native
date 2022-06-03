@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 // RNGR's FlatList ist currently breaking the pull-to-refresh behaviour on Android
 // See https://github.com/software-mansion/react-native-gesture-handler/issues/598
+
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { useDerivedAtom, useInitializeDatabaseValues } from '../../store/channels';
 
 import type { Channel } from 'stream-chat';
 
@@ -115,12 +117,12 @@ const ChannelListMessengerWithContext = <
    * we set the loading state one cycle behind to ensure the channels are set before the
    * change to loadingChannels is registered.
    */
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!!loadingChannels !== loading) {
-      setLoading(!!loadingChannels);
-    }
-  }, [loading, loadingChannels]);
+  const [loading, setLoading] = useState(false);
+  // useEffect(() => {
+  //   if (!!loadingChannels !== loading) {
+  //     setLoading(!!loadingChannels);
+  //   }
+  // }, [loading, loadingChannels]);
 
   if (error && !refreshing && !loadingChannels && !channels?.length) {
     return (

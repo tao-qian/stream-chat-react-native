@@ -36,7 +36,6 @@ import { LoadingErrorIndicator as LoadingErrorIndicatorDefault } from '../Indica
 import { useChannelsAtom } from '../../store/channels';
 import { atom, useAtom } from 'jotai';
 import { useEffect } from 'react';
-import type { ChannelNew } from 'stream-chat-react-native';
 import { useUpdateAtom } from 'jotai/utils';
 
 export type ChannelListProps<
@@ -251,11 +250,11 @@ export const ChannelList = <
 
   const [forceUpdate, setForceUpdate] = useState(0);
 
-  const db = sqlite.open('scrn', 'databases');
+  // const db = sqlite.open('scrn', 'databases');
 
-  if (db.status === 1) {
-    console.error('Database could not be opened!');
-  }
+  // if (db.status === 1) {
+  //   console.error('Database could not be opened!');
+  // }
 
   const {
     error,

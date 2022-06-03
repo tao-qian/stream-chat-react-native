@@ -31,6 +31,9 @@ import { UserSelectorScreen } from './src/screens/UserSelectorScreen';
 
 import type { StreamChat } from 'stream-chat';
 
+LogBox.ignoreLogs(["Seems like you're using an old API"]);
+LogBox.ignoreLogs(['Each child in a list should have a unique']);
+
 import type {
   StackNavigatorParamList,
   StreamChatGenerics,

@@ -53,7 +53,7 @@ export type ChannelPreviewMessengerPropsWithContext<
 > = Pick<
   ChannelsContextValue<StreamChatGenerics>,
   | 'maxUnreadCount'
-  | 'onSelect '
+  | 'onSelect'
   | 'PreviewAvatar'
   | 'PreviewMessage'
   | 'PreviewMutedStatus'
@@ -87,7 +87,7 @@ export type ChannelPreviewMessengerPropsWithContext<
    *
    * @overrideType object
    */
-  latestMessagePreview: LatestMessagePreview<StreamChatGenerics>;
+  latestMessagePreview?: LatestMessagePreview<StreamChatGenerics>;
   /**
    * Formatter function for date of latest message.
    * @param date Message date
@@ -110,9 +110,9 @@ const ChannelPreviewMessengerWithContext = <
   const {
     channel,
     formatLatestMessageDate,
-    latestMessagePreview,
     maxUnreadCount,
     onSelect,
+    latestMessagePreview,
     PreviewAvatar = ChannelAvatar,
     PreviewMessage = ChannelPreviewMessage,
     PreviewStatus = ChannelPreviewStatus,
@@ -129,10 +129,11 @@ const ChannelPreviewMessengerWithContext = <
     },
   } = useTheme();
 
-  const displayName = useChannelPreviewDisplayName(
-    channel,
-    Math.floor(maxWidth / ((title.fontSize || styles.title.fontSize) / 2)),
-  );
+  const displayName =
+    useChannelPreviewDisplayName(
+      channel,
+      Math.floor(maxWidth / ((title.fontSize || styles.title.fontSize) / 2)),
+    ) || 'Unnamed channel'; // TODO: remove, just for testing till members are available
 
   const isChannelMuted = false; // channel.muteStatus().muted;
 
@@ -164,11 +165,11 @@ const ChannelPreviewMessengerWithContext = <
         </View>
         <View style={[styles.row, row]}>
           <PreviewMessage latestMessagePreview={latestMessagePreview} />
-          <PreviewStatus
+          {/* <PreviewStatus
             channel={channel}
             formatLatestMessageDate={formatLatestMessageDate}
             latestMessagePreview={latestMessagePreview}
-          />
+          /> */}
         </View>
       </View>
     </TouchableOpacity>

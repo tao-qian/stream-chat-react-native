@@ -15,5 +15,7 @@ module.exports = {
     extraNodeModules,
     useWatchman: false,
   },
-  watchFolders: [projectRoot].concat(alternateRoots),
+  watchFolders: [projectRoot]
+    .concat(alternateRoots)
+    .concat(['/Users/madsroskar/code/stream/chat/react-native/stream-chat-js']),
 };

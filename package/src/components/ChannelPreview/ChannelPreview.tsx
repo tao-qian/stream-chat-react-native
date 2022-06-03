@@ -45,15 +45,15 @@ export type ChannelPreviewPropsWithContext<
 const useChannelListeners = (channel: ChannelNew) => {
   const setUnread = useUpdateAtom(channel.unreadCount);
 
-  useEffect(() => {
-    const intervalID = setInterval(() => {
-      if (channel.name === 'Coders') {
-        setUnread((unread) => unread + 1);
-      }
-    }, 1000);
+  // useEffect(() => {
+  //   const intervalID = setInterval(() => {
+  //     if (channel.name === 'Coders') {
+  //       setUnread((unread) => unread + 1);
+  //     }
+  //   }, 1000);
 
-    return () => clearInterval(intervalID);
-  }, []);
+  //   return () => clearInterval(intervalID);
+  // }, []);
 };
 
 /**
@@ -70,7 +70,6 @@ const ChannelPreviewWithContext = <
   const [channel] = useAtom(channelAtom);
 
   useChannelListeners(channel);
-  console.log('render');
 
   const [lastMessage, setLastMessage] = useState<MessageResponse>(
     channel.messages[channel.messages.length - 1],
@@ -79,7 +78,7 @@ const ChannelPreviewWithContext = <
   const [forceUpdate, setForceUpdate] = useState(0);
   const unread = channel.unreadCount;
 
-  const latestMessagePreview = useLatestMessagePreview(channel, forceUpdate, lastMessage);
+  const latestMessagePreview = useLatestMessagePreview(channel, forceUpdate);
   // console.log({ cid: channel.cid });
 
   // I don't think these are necessary anymore, we can make lastMessage an atom, and update that

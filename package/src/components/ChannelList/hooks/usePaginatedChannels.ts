@@ -9,6 +9,7 @@ import type {
 } from 'stream-chat';
 
 import { atom, useAtom } from 'jotai';
+import { splitAtom } from 'jotai/utils';
 
 import { useActiveChannelsRefContext } from '../../../contexts/activeChannelsRefContext/ActiveChannelsRefContext';
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
@@ -19,9 +20,13 @@ import { ONE_SECOND_IN_MS } from '../../../utils/date';
 import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
 import {
   channelsAtom,
+  convertChannelData,
+  getChannels,
+  setChannelsWithoutDBUpdateAtom,
   useChannelsAtom,
   useDerivedAtom,
   useMessagesAtom,
+  useWriteChannelsAtom,
 } from '../../../store/channels';
 
 const waitSeconds = (seconds: number) =>
@@ -71,6 +76,7 @@ export const usePaginatedChannels = <
     queryType: QueryType = 'loadChannels',
     retryCount = 0,
   ): Promise<void> => {
+    return;
     if (!client || !isMountedRef.current) return;
 
     const hasUpdatedData =
@@ -110,32 +116,7 @@ export const usePaginatedChannels = <
         skipInitialization: activeChannels.current,
       });
 
-      const channelsInResponse = channelQueryResponse.channels.map((chan) => {
-        const unreadCountAtom = atom(
-          chan.read?.find((r) => r.user.id === client.userID)?.unread_messages || 0,
-        );
-
-        return {
-          ...chan.channel,
-          messages: chan.messages,
-          unreadCount: atom(
-            (get) => get(unreadCountAtom),
-            (get, set, update) => {
-              const newValue = typeof update === 'function' ? update(get(unreadCountAtom)) : update;
-
-              set(unreadCountAtom, newValue);
-            },
-          ), // TODO: Implement logic related to this, and make this readable
-
-          read: chan.read?.reduce((acc: ReadResponse, current) => ({
-            ...current,
-            [acc.user.id]: acc,
-          })),
-
-          members: chan.members,
-          image: chan.channel.image || '',
-        };
-      });
+      const channelsInResponse = channelQueryResponse.channels.map(convertChannelData);
 
       if (isQueryStale() || !isMountedRef.current) {
         return;
@@ -161,7 +142,7 @@ export const usePaginatedChannels = <
       if (retryCount === MAX_NUMBER_OF_RETRIES && !isQueryingRef.current) {
         setActiveQueryType(null);
         console.warn(err);
-        throw new Error(err);
+
         setError(
           new Error(
             `Maximum number of retries reached in queryChannels. Last error message is: ${err}`,

@@ -25,6 +25,7 @@ import { SDK } from '../../native';
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import type { Streami18n } from '../../utils/Streami18n';
 import { version } from '../../version.json';
+import { useInitializeDatabaseValues } from '../../store/channels';
 
 init();
 
@@ -147,6 +148,7 @@ const ChatWithContext = <
     closeConnectionOnBackground,
   );
 
+  useInitializeDatabaseValues();
   /**
    * Setup muted user listener
    */

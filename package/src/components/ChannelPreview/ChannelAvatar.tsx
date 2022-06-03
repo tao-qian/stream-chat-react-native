@@ -1,16 +1,17 @@
 import React from 'react';
 
-import type { ChannelPreviewProps } from './ChannelPreview';
+import type { ChannelNew, ChannelPreviewProps } from './ChannelPreview';
 import { useChannelPreviewDisplayAvatar } from './hooks/useChannelPreviewDisplayAvatar';
 import { useChannelPreviewDisplayPresence } from './hooks/useChannelPreviewDisplayPresence';
 
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { Avatar } from '../Avatar/Avatar';
 import { GroupAvatar } from '../Avatar/GroupAvatar';
+import type { Channel } from 'stream-chat';
 
 export type ChannelAvatarProps<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
-> = Pick<ChannelPreviewProps<StreamChatGenerics>, 'channel'>;
+> = { channel: ChannelNew };
 
 /**
  * This UI component displays an avatar for a particular channel.
