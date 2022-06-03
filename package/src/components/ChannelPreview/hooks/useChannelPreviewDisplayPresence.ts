@@ -16,12 +16,11 @@ const getChannelPreviewDisplayPresence = <
   const currentUserId = client?.userID || '';
 
   if (currentUserId) {
-    const members = Object.values(channel.members);
-    const otherMembers = members.filter((member) => member.user?.id !== currentUserId);
-
-    if (otherMembers.length === 1) {
-      return !!otherMembers[0].user?.online;
-    }
+    // const members = Object.values(channel.members);
+    // const otherMembers = members.filter((member) => member.user?.id !== currentUserId);
+    // if (otherMembers.length === 1) {
+    //   return !!otherMembers[0].user?.online;
+    // }
   }
   return false;
 };
@@ -37,19 +36,20 @@ export const useChannelPreviewDisplayPresence = <
 >(
   channel: ChannelNew,
 ) => {
-  const { client } = useChatContext<StreamChatGenerics>();
+  // const { client } = useChatContext<StreamChatGenerics>();
 
-  const currentUserId = client?.userID || ''; // TODO
-  const members = Object.values(channel.members).filter(
-    (member) => !!member.user?.id && !!currentUserId && member.user?.id !== currentUserId,
-  );
-  const channelMemberOnline = members.some((member) => member.user?.online);
+  // const currentUserId = client?.userID || ''; // TODO
+  // const members = Object.values(channel.members).filter(
+  //   (member) => !!member.user?.id && !!currentUserId && member.user?.id !== currentUserId,
+  // );
+  // const channelMemberOnline = members.some((member) => member.user?.online);
 
   const [displayPresence, setDisplayPresence] = useState(false);
 
-  useEffect(() => {
-    setDisplayPresence(getChannelPreviewDisplayPresence(channel, client));
-  }, [channelMemberOnline]);
+  // TODO remember to fix this
+  // useEffect(() => {
+  //   setDisplayPresence(getChannelPreviewDisplayPresence(channel, client));
+  // }, [channelMemberOnline]);
 
   return displayPresence;
 };

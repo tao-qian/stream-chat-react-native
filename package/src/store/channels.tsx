@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { atom, useAtom } from 'jotai';
 import { splitAtom } from 'jotai/utils';
 import {
@@ -10,18 +10,29 @@ import {
 } from 'stream-chat';
 import type { ChannelNew } from '../components/ChannelPreview/ChannelPreview';
 import {
-  DBData,
-  getChannels,
+  PreparedQueries,
+  selectChannels,
   createInsertQuery,
   initializeDatabase,
   executeQueries,
-  getMessages,
+  selectMessages,
 } from './database';
 
 type ChannelID = string;
 
-const baseAtom = atom<ChannelNew[]>([]);
-const baseMessagesAtom = atom<MessageResponse[]>(getMessages());
+const baseAtom = atom<ChannelNew[]>(selectChannels());
+const baseMessagesAtom = atom<MessageResponse[]>(selectMessages());
+
+export const useChannelMessagesAtom = (cid: string) => {
+  // TODO: This memo will cause issues if it isn't changed in the future,
+  //       since it's matching on the cid
+  const channelMessagesAtom = useMemo(
+    () => atom((get) => get(baseMessagesAtom).filter((message) => message.cid === cid)),
+    [cid],
+  );
+
+  return useAtom(channelMessagesAtom);
+};
 
 const derivedMessagesAtom = atom<MessageResponse[]>(
   (get) => get(baseMessagesAtom),
@@ -39,23 +50,22 @@ export const useInitializeDatabaseValues = () => {
   const currentUser = { id: 'somebody' };
 
   useEffect(() => {
-    const channels = getChannels();
-    const conv = channels.map((channelData) => {
-      return {
-        channel: channelData,
-        members: [],
-        messages: messages.filter((message) => message.cid === channelData.cid),
-        pinned_messages: [],
-        hidden: false,
-        membership: null,
-        read: [currentUser],
-        watcher_count: 0,
-        watchers: [],
-        duration: '',
-      };
-    });
-
-    setChannels(conv.map(convertChannelData as any));
+    // const channels = selectChannels();
+    // const conv = channels.map((channelData) => {
+    //   return {
+    //     channel: channelData,
+    //     members: [],
+    //     messages: messages.filter((message) => message.cid === channelData.cid),
+    //     pinned_messages: [],
+    //     hidden: false,
+    //     membership: null,
+    //     read: [currentUser],
+    //     watcher_count: 0,
+    //     watchers: [],
+    //     duration: '',
+    //   };
+    // });
+    // setChannels(conv.map(convertChannelData as any));
   }, []);
 };
 
@@ -67,10 +77,10 @@ const derivedAtom = atom<ChannelNew[]>(
     initializeDatabase();
     set(baseAtom, nextValue);
 
-    let queries: DBData[] = [];
+    let queries: PreparedQueries[] = [];
     for (let channel of nextValue) {
       const { id, cid, name, messages } = channel;
-      queries.push(createInsertQuery('channels', [id, cid, name || '']) as DBData);
+      queries.push(createInsertQuery('channels', [id, cid, name || '']) as PreparedQueries);
 
       if (messages !== undefined) {
         const messagesToUpsert = messages.map((message: MessageResponse) => {

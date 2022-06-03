@@ -11,6 +11,8 @@ import {
 } from '../../../contexts/translationContext/TranslationContext';
 
 import type { DefaultStreamChatGenerics } from '../../../types/types';
+import { useAtom } from 'jotai';
+import { getChannelMessagesAtom, useChannelMessagesAtom } from '../../../store/channels';
 
 type LatestMessage<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -169,7 +171,7 @@ const getLatestMessagePreview = <
 }) => {
   const { channel, client, lastMessage, readEvents, t, tDateTimeParser } = params;
 
-  const messages = channel.messages;
+  const messages = []; //channel.messages;
 
   if (!messages.length && !lastMessage) {
     return {
@@ -213,9 +215,10 @@ export const useLatestMessagePreview = <
   const { client } = useChatContext<StreamChatGenerics>();
   const { t, tDateTimeParser } = useTranslationContext();
 
+  const [messages] = useChannelMessagesAtom(channel.cid);
+
   const channelConfigExists = typeof channel?.getConfig === 'function';
 
-  const messages = channel.messages;
   const message = messages.length ? messages[messages.length - 1] : undefined;
 
   const channelLastMessageString = `${lastMessage?.id || message?.id}${

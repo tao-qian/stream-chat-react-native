@@ -22,6 +22,7 @@ import { ChatContextValue, useChatContext } from '../../contexts/chatContext/Cha
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { atom, PrimitiveAtom, useAtom } from 'jotai';
 import { useUpdateAtom } from 'jotai/utils';
+import { getChannelMessagesAtom, useChannelMessagesAtom } from '../../store/channels';
 
 export type ChannelNew = ChannelResponse & {
   messages: MessageResponse[];
@@ -68,12 +69,11 @@ const ChannelPreviewWithContext = <
   const { channel: channelAtom, client, Preview } = props;
 
   const [channel] = useAtom(channelAtom);
+  const [messages] = useChannelMessagesAtom(channel.cid);
 
   useChannelListeners(channel);
 
-  const [lastMessage, setLastMessage] = useState<MessageResponse>(
-    channel.messages[channel.messages.length - 1],
-  );
+  const [lastMessage, setLastMessage] = useState<MessageResponse>(messages[messages.length - 1]);
 
   const [forceUpdate, setForceUpdate] = useState(0);
   const unread = channel.unreadCount;

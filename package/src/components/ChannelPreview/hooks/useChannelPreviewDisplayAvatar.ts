@@ -24,8 +24,8 @@ export const getChannelPreviewDisplayAvatar = <
       image: channelImage,
       name: channelName,
     };
-  } else if (currentUserId) {
-    const members = Object.values(channel.members);
+  } else if (currentUserId && false) {
+    const members = []; //Object.values(channel.members);
     const otherMembers = members.filter((member) => member.user?.id !== currentUserId);
 
     if (otherMembers.length === 1) {
@@ -42,6 +42,7 @@ export const getChannelPreviewDisplayAvatar = <
       names: otherMembers.slice(0, 4).map((member) => member.user?.name || ''),
     };
   }
+
   return {
     id: channelId,
     name: channelName,
