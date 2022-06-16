@@ -209,14 +209,17 @@ const GalleryWithContext = <
           >
             {rows.map(({ height, resizeMode, type, url, width }, rowIndex) => {
               const openImageViewer = () => {
+                console.log('opening image viewer');
                 if (!legacyImageViewerSwipeBehaviour && message) {
                   // Added if-else to keep the logic readable, instead of DRY.
                   // if - legacyImageViewerSwipeBehaviour is disabled
                   // else - legacyImageViewerSwipeBehaviour is enabled
+                  console.log('not legacy');
                   setImages([message]);
                   setImage({ messageId: message.id, url });
                   setOverlay('gallery');
                 } else if (legacyImageViewerSwipeBehaviour) {
+                  console.log('legacy');
                   setImage({ messageId: message?.id, url });
                   setOverlay('gallery');
                 }

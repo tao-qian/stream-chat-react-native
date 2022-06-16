@@ -28,7 +28,7 @@ import Animated, {
 
 import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
-import type { UserResponse } from 'stream-chat';
+import type { Attachment, UserResponse } from 'stream-chat';
 
 import { AnimatedGalleryImage } from './components/AnimatedGalleryImage';
 import { AnimatedGalleryVideo } from './components/AnimatedGalleryVideo';
@@ -65,6 +65,7 @@ import type { DefaultStreamChatGenerics } from '../../types/types';
 import { getResizedImageUrl } from '../../utils/getResizedImageUrl';
 import { getUrlOfImageAttachment } from '../../utils/getUrlOfImageAttachment';
 import { vh, vw } from '../../utils/utils';
+import type { MessageType } from '../../components/MessageList/hooks/useMessageList';
 
 const isAndroid = Platform.OS === 'android';
 const fullScreenHeight = Dimensions.get('screen').height;
@@ -161,7 +162,7 @@ export const ImageGallery = <
   } = useTheme();
   const [gridPhotos, setGridPhotos] = useState<Photo<StreamChatGenerics>[]>([]);
   const { overlay, translucentStatusBar } = useOverlayContext();
-  const { image, images, setImage } = useImageGalleryContext<StreamChatGenerics>();
+  const { image, messages, setImage } = useImageGalleryContext<StreamChatGenerics>();
 
   /**
    * Height constants
@@ -251,50 +252,51 @@ export const ImageGallery = <
   const scale = useSharedValue(1);
   const translationX = useSharedValue(0);
 
+  const getGiphyURI = (attachment: Attachment<StreamChatGenerics>) =>
+    attachment.giphy?.[giphyVersion]?.url || attachment.thumb_url || attachment.image_url;
+
+  const getImageURI = (attachment: Attachment<StreamChatGenerics>) =>
+    !attachment.title_link && !attachment.og_scrape_url && getUrlOfImageAttachment(attachment);
+
+  const attachmentHasValidURI = (attachment: Attachment<StreamChatGenerics>) =>
+    (attachment.type === 'giphy' && getGiphyURI(attachment)) ||
+    (attachment.type === 'image' && getImageURI(attachment)) ||
+    (attachment.type === 'video' && isVideoPackageAvailable());
+
+  const getApplicablePhotosFromMessage = (message: MessageType<StreamChatGenerics>) =>
+    message?.attachments?.filter(attachmentHasValidURI);
+
   /**
    * Photos array created from all currently available
    * photo attachments
    */
+  const photos = messages
+    .reduce((acc: Photo<StreamChatGenerics>[], currentMessage) => {
+      const attachmentImages = (getApplicablePhotosFromMessage(currentMessage) || []).map((a) => {
+        const imageUrl = getUrlOfImageAttachment(a) as string;
 
-  const photos = images.reduce((acc: Photo<StreamChatGenerics>[], cur) => {
-    const attachmentImages =
-      cur.attachments?.filter(
-        (attachment) =>
-          (attachment.type === 'giphy' &&
-            (attachment.giphy?.[giphyVersion]?.url ||
-              attachment.thumb_url ||
-              attachment.image_url)) ||
-          (attachment.type === 'image' &&
-            !attachment.title_link &&
-            !attachment.og_scrape_url &&
-            getUrlOfImageAttachment(attachment)) ||
-          (isVideoPackageAvailable() && attachment.type === 'video'),
-      ) || [];
+        return {
+          channelId: currentMessage.cid,
+          created_at: currentMessage.created_at,
+          id: `photoId-${currentMessage.id}-${imageUrl}`,
+          messageId: currentMessage.id,
+          mime_type: a.mime_type,
+          original_height: a.original_height,
+          original_width: a.original_width,
+          type: a.type,
+          uri: getResizedImageUrl({
+            height: screenHeight,
+            url: imageUrl,
+            width: screenWidth,
+          }),
+          user: currentMessage.user,
+          user_id: currentMessage.user_id,
+        };
+      });
 
-    const attachmentPhotos = attachmentImages.map((a) => {
-      const imageUrl = getUrlOfImageAttachment(a) as string;
-
-      return {
-        channelId: cur.cid,
-        created_at: cur.created_at,
-        id: `photoId-${cur.id}-${imageUrl}`,
-        messageId: cur.id,
-        mime_type: a.mime_type,
-        original_height: a.original_height,
-        original_width: a.original_width,
-        type: a.type,
-        uri: getResizedImageUrl({
-          height: screenHeight,
-          url: imageUrl,
-          width: screenWidth,
-        }),
-        user: cur.user,
-        user_id: cur.user_id,
-      };
-    });
-
-    return [...acc, ...attachmentPhotos] as Photo<StreamChatGenerics>[];
-  }, []);
+      return [...acc, ...attachmentImages] as Photo<StreamChatGenerics>[];
+    }, [])
+    .reverse();
 
   /**
    * Photos length needs to be kept as a const here so if the length
