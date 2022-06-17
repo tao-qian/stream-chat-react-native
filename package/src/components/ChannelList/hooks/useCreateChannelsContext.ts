@@ -37,7 +37,7 @@ export const useCreateChannelsContext = <
   setFlatListRef,
   Skeleton,
 }: ChannelsContextValue<StreamChatGenerics>) => {
-  const channelValueString = 'jdsklajdklasjd';
+  const channelValueString = channels.length;
   const channelsContext: ChannelsContextValue<StreamChatGenerics> = useMemo(
     () => ({
       additionalFlatListProps,

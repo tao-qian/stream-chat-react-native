@@ -69,7 +69,14 @@ export const useChatClient = () => {
    * @param config the user login config
    * @returns function to unsubscribe from listeners
    */
-  const loginUser = async (config: LoginConfig) => {
+  const loginUser = async () => {
+    const config = {
+      apiKey: 'yjrt5yxw77ev',
+      userId: USERS['vishal'].id,
+      userImage: USERS['vishal'].image,
+      userName: USERS['vishal'].name,
+      userToken: USER_TOKENS['vishal'],
+    };
     // unsubscribe from previous push listeners
     unsubscribePushListenersRef.current?.();
     const client = StreamChat.getInstance<StreamChatGenerics>(config.apiKey, {
@@ -81,8 +88,10 @@ export const useChatClient = () => {
       image: config.userImage,
       name: config.userName,
     };
-
-    await client.connectUser(user, config.userToken);
+    console.log('... connecting user')
+    const promise = client.connectUser(user, config.userToken);
+    setChatClient(client);
+    await promise;
     await AsyncStore.setItem('@stream-rn-sampleapp-login-config', config);
 
     const permissionAuthStatus = await messaging().hasPermission();
@@ -150,10 +159,9 @@ export const useChatClient = () => {
           '@stream-rn-sampleapp-login-config',
           null,
         );
+        console.log({ config });
 
-        if (config) {
-          await loginUser(config);
-        }
+        await loginUser();
       }
     } catch (e) {
       console.warn(e);
@@ -169,6 +177,7 @@ export const useChatClient = () => {
 
   useEffect(() => {
     const run = async () => {
+      console.log('>>>>')
       await requestNotificationPermission();
       await switchUser();
     };

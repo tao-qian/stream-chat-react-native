@@ -45,7 +45,7 @@ const getLatestMessageDisplayText = <
   if (isMessageTypeDeleted) return [{ bold: false, text: t('Message deleted') }];
   const currentUserId = client?.userID || '';
   const messageOwnerId = message.user?.id;
-  const members = Object.keys(channel.members);
+  const members = Object.keys(channel.members || {});
 
   const owner =
     messageOwnerId === currentUserId
@@ -171,7 +171,7 @@ const getLatestMessagePreview = <
 }) => {
   const { channel, client, lastMessage, readEvents, t, tDateTimeParser } = params;
 
-  const messages = []; //channel.messages;
+  const messages = channel.messages;
 
   if (!messages.length && !lastMessage) {
     return {
@@ -215,7 +215,7 @@ export const useLatestMessagePreview = <
   const { client } = useChatContext<StreamChatGenerics>();
   const { t, tDateTimeParser } = useTranslationContext();
 
-  const [messages] = useChannelMessagesAtom(channel.cid);
+  const messages = channel.messages;
 
   const channelConfigExists = typeof channel?.getConfig === 'function';
 

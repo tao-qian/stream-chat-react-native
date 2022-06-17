@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import type { FlatList } from 'react-native-gesture-handler';
-import { useMemo } from 'react';
 
+import { atom, useAtom } from 'jotai';
+import { useUpdateAtom } from 'jotai/utils';
 import type { Channel, ChannelFilters, ChannelOptions, ChannelSort, Event } from 'stream-chat';
 
 import { ChannelListFooterLoadingIndicator } from './ChannelListFooterLoadingIndicator';
@@ -29,14 +30,12 @@ import {
   ChannelsContextValue,
   ChannelsProvider,
 } from '../../contexts/channelsContext/ChannelsContext';
+import { useChatContext } from '../../contexts/chatContext/ChatContext';
+import { useChannelsAtom } from '../../store/channels';
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { ChannelPreviewMessenger } from '../ChannelPreview/ChannelPreviewMessenger';
 import { EmptyStateIndicator as EmptyStateIndicatorDefault } from '../Indicators/EmptyStateIndicator';
 import { LoadingErrorIndicator as LoadingErrorIndicatorDefault } from '../Indicators/LoadingErrorIndicator';
-import { useChannelsAtom } from '../../store/channels';
-import { atom, useAtom } from 'jotai';
-import { useEffect } from 'react';
-import { useUpdateAtom } from 'jotai/utils';
 
 export type ChannelListProps<
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -247,6 +246,7 @@ export const ChannelList = <
     Skeleton = SkeletonDefault,
     sort = DEFAULT_SORT,
   } = props;
+  const { client } = useChatContext();
 
   const [forceUpdate, setForceUpdate] = useState(0);
 
@@ -257,6 +257,7 @@ export const ChannelList = <
   // }
 
   const {
+    channels,
     error,
     hasNextPage,
     loadingChannels,
@@ -270,91 +271,13 @@ export const ChannelList = <
     options,
     sort,
   });
-
-  const [channels, setChannels] = useChannelsAtom();
+  // console.log('channels in CHANNELLIST', channels);
+  // const [channels, setChannels] = useChannelsAtom();
   const [countAtom, setCountAtom] = useAtom(countToUpdateAtom);
   const setCount = useUpdateAtom(countAtom);
 
   // const [someChannel] = useAtom(channels[2]);
   // const [unread, setUnread] = useAtom(someChannel.unreadCount);
-
-  useEffect(() => {
-    if (channels.length > 0) {
-      // setCountAtom(
-      //   atom(
-      //     (get) => get(channels[2]).unreadCount,
-      //     (get, set, update) => {
-      //       const newValue =
-      //         typeof update === 'function' ? update(get(get(channels[2]).unreadCount)) : update;
-      //       set(get(channels[2]).unreadCount, newValue);
-      //     },
-      //   ),
-      // );
-      // setCountAtom(useMemo(atom(2), [2]));
-    }
-
-    // setInterval(() => {
-    //   console.log(`Count: ${count}`);
-    //   setCount((previous) => previous + 1);
-    //   console.log(`Count: ${count}`);
-    // }, 1000);
-  });
-
-  // Setup event listeners
-  // useAddedToChannelNotification({
-  //   onAddedToChannel,
-  // });
-
-  // useChannelDeleted({
-  //   onChannelDeleted,
-  //   setChannels,
-  // });
-
-  // useChannelHidden({
-  //   onChannelHidden,
-  //   setChannels,
-  // });
-
-  // useChannelTruncated({
-  //   onChannelTruncated,
-  //   refreshList,
-  //   setChannels,
-  //   setForceUpdate,
-  // });
-
-  // useChannelUpdated({
-  //   onChannelUpdated,
-  //   setChannels,
-  // });
-
-  // useChannelVisible({
-  //   onChannelVisible,
-  //   setChannels,
-  // });
-
-  // useConnectionRecovered<StreamChatGenerics>({
-  //   refreshList,
-  //   setForceUpdate,
-  // });
-
-  // useNewMessage({
-  //   lockChannelOrder,
-  //   setChannels,
-  // });
-
-  // useNewMessageNotification({
-  //   onMessageNew,
-  //   setChannels,
-  // });
-
-  // useRemovedFromChannelNotification({
-  //   onRemovedFromChannel,
-  //   setChannels,
-  // });
-
-  // useUserPresence({
-  //   setChannels,
-  // });
 
   const channelsContext = useCreateChannelsContext({
     additionalFlatListProps,

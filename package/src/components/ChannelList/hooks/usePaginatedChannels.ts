@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { atom, useAtom } from 'jotai';
+import { splitAtom } from 'jotai/utils';
 import type {
   Channel,
   ChannelFilters,
@@ -8,16 +10,10 @@ import type {
   ReadResponse,
 } from 'stream-chat';
 
-import { atom, useAtom } from 'jotai';
-import { splitAtom } from 'jotai/utils';
-
 import { useActiveChannelsRefContext } from '../../../contexts/activeChannelsRefContext/ActiveChannelsRefContext';
 import { useChatContext } from '../../../contexts/chatContext/ChatContext';
 import { useIsMountedRef } from '../../../hooks/useIsMountedRef';
 
-import type { DefaultStreamChatGenerics } from '../../../types/types';
-import { ONE_SECOND_IN_MS } from '../../../utils/date';
-import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
 import {
   channelsAtom,
   convertChannelData,
@@ -28,6 +24,10 @@ import {
   useMessagesAtom,
   useWriteChannelsAtom,
 } from '../../../store/channels';
+import { selectChannels } from '../../../store/database';
+import type { DefaultStreamChatGenerics } from '../../../types/types';
+import { ONE_SECOND_IN_MS } from '../../../utils/date';
+import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
 
 const waitSeconds = (seconds: number) =>
   new Promise((resolve) => {
@@ -50,7 +50,8 @@ const RETRY_INTERVAL_IN_MS = 5000;
 
 type QueryType = 'reload' | 'refresh' | 'loadChannels';
 export type QueryChannels = (queryType?: QueryType, retryCount?: number) => Promise<void>;
-
+const convertToQuery = (filters, sort) =>
+  JSON.stringify(`${JSON.stringify(filters)}${JSON.stringify(sort)}`);
 export const usePaginatedChannels = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >({
@@ -71,12 +72,12 @@ export const usePaginatedChannels = <
   const filtersRef = useRef<typeof filters | null>(null);
   const sortRef = useRef<typeof sort | null>(null);
   const activeRequestId = useRef<number>(0);
-
+  // console.log('channels during rerendering', channels.length);
   const queryChannels: QueryChannels = async (
     queryType: QueryType = 'loadChannels',
     retryCount = 0,
   ): Promise<void> => {
-    return;
+    // console.log('queryChannels', client, isMountedRef.current);
     if (!client || !isMountedRef.current) return;
 
     const hasUpdatedData =
@@ -115,7 +116,7 @@ export const usePaginatedChannels = <
       const channelQueryResponse = await client.queryChannelsRaw(filters, sort, newOptions, {
         skipInitialization: activeChannels.current,
       });
-
+      // console.log(channelQueryResponse);
       const channelsInResponse = channelQueryResponse.channels.map(convertChannelData);
 
       if (isQueryStale() || !isMountedRef.current) {
@@ -124,8 +125,11 @@ export const usePaginatedChannels = <
 
       const newChannels =
         queryType === 'loadChannels' ? [...channels, ...channelsInResponse] : channelsInResponse;
-
-      setChannels(newChannels);
+      console.log('STORING THE CHANNELS ', newChannels.length);
+      setChannels({
+        channels: newChannels,
+        query: convertToQuery(filters, sort),
+      });
       setHasNextPage(channelsInResponse.length >= newOptions.limit);
       setError(undefined);
       isQueryingRef.current = false;
@@ -191,15 +195,28 @@ export const usePaginatedChannels = <
   const sortStr = useMemo(() => JSON.stringify(sort), [sort]);
 
   useEffect(() => {
-    reloadList();
-    console.log('Reload called');
+    console.log('>>>>>>>>>>>>>>>>> ', client?.user)
+    if (client?.user) {
+      console.log('useEffect', client?.user);
+      console.log('FILTERS: ', filters);
+      // console.log({
+      //   channels: selectChannels(convertToQuery(filters, sort))
+      // })
+      const channelsFromDB = selectChannels(convertToQuery(filters, sort));
+      setChannels({
+        channels: channelsFromDB,
+      });
+      console.log('usePaginatedChannels - ', channelsFromDB);
+      reloadList();
+      console.log('Reload called');
+    }
   }, [filterStr, sortStr]);
 
   return {
     channels,
     error,
     hasNextPage,
-    loadingChannels: activeQueryType === 'reload',
+    loadingChannels: activeQueryType === 'reload' && channels.length === 0,
     loadingNextPage: activeQueryType === 'loadChannels',
     loadNextPage,
     refreshing: activeQueryType === 'refresh',

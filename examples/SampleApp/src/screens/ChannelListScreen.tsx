@@ -103,6 +103,8 @@ export const ChannelListScreen: React.FC = () => {
     scrollRef.current = ref;
   };
 
+  if (!chatClientUserId) return null;
+
   return (
     <View
       style={[

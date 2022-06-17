@@ -11,7 +11,7 @@ if (__DEV__) {
 }
 
 const deleteDatabase = () => {
-  const { status, message } = sqlite.delete(DB_NAME, DB_LOCATION);
+  const { message, status } = sqlite.delete(DB_NAME, DB_LOCATION);
   if (status === DB_STATUS_ERROR) {
     throw new Error(`Error deleting DB: ${message}`);
   }
@@ -20,6 +20,10 @@ const deleteDatabase = () => {
 };
 
 const tables = {
+  queryChannelsMap: {
+    id: 'TEXT PRIMARY KEY',
+    cids: 'TEXT',
+  },
   channels: {
     id: 'TEXT PRIMARY KEY',
     cid: 'TEXT NOT NULL',
@@ -40,12 +44,12 @@ const DB_NAME = 'stream-chat-react-native';
 const DB_LOCATION = 'databases';
 const DB_STATUS_ERROR = 1;
 
-export const initializeDatabase = () => {
-  return executeQueries([
+export const initializeDatabase = () =>
+  executeQueries([
+    [createCreateTableQuery('queryChannelsMap')],
     [createCreateTableQuery('channels')],
     [createCreateTableQuery('messages')],
   ]);
-};
 
 export const createInsertQuery = (table: Table, rows: string[]) => {
   const fields = Object.keys(tables[table]);
@@ -88,27 +92,97 @@ export const executeQueries = (queries: PreparedQueries[]) => {
 };
 
 const openDB = () => {
-  const { status, message } = sqlite.open(DB_NAME, DB_LOCATION);
+  const { message, status } = sqlite.open(DB_NAME, DB_LOCATION);
   if (status === DB_STATUS_ERROR) {
     console.error(`Error opening database ${DB_NAME}: ${message}`);
   }
 };
 const closeDB = () => {
-  const { status, message } = sqlite.close(DB_NAME);
+  const { message, status } = sqlite.close(DB_NAME);
   if (status === DB_STATUS_ERROR) {
     console.error(`Error closing database ${DB_NAME}: ${message}`);
   }
 };
 
-export const selectChannels = (): ChannelResponse[] => select('channels', '*');
+export const selectChannels = (query: string): ChannelResponse[] => {
+  const channelIds = getChannelIdsForQuery(query);
+  const channels = getChannelsForChannelIds(channelIds);
+  // sort the channels as per channel ids
+  channels.sort((a, b) => channelIds.indexOf(a.cid) - channelIds.indexOf(b.cid));
+
+  const hydratedChannels = channels.map((c) => {
+    const messages = getMessagesForChannelId(c.cid);
+
+    return {
+      ...c,
+      messages,
+    };
+  });
+  return hydratedChannels;
+};
 
 export const selectMessages = (): MessageResponseBase[] => select('messages', '*');
 
-const select = (table: Table, fields: string = '*') => {
+const getMessagesForChannelId = (channelId: string) => {
+  openDB();
+  const { message, rows, status } = sqlite.executeSql(
+    DB_NAME,
+    `SELECT * FROM messages WHERE cid = ?`,
+    [channelId],
+  );
+
+  if (status === 1) {
+    console.error(`Querying for channels failed: ${message}`);
+  }
+
+  return rows ? rows._array : [];
+};
+
+const getChannelsForChannelIds = (channelIds: string[]) => {
+  openDB();
+  const questionMarks = Array(channelIds.length).fill('?').join(',');
+  const { message, rows, status } = sqlite.executeSql(
+    DB_NAME,
+    `SELECT * FROM channels WHERE cid IN (${questionMarks})`,
+    [...channelIds],
+  );
+
+  if (status === 1) {
+    console.error(`Querying for channels failed: ${message}`);
+  }
+
+  return rows ? rows._array : [];
+};
+
+const getChannelIdsForQuery = (query: string): string[] => {
+  console.log(
+    createCreateTableQuery('queryChannelsMap'),
+    `SELECT cids FROM queryChannelsMap where id = ${query};`,
+  );
+  openDB();
+
+  const { message, rows, status } = sqlite.executeSql(
+    DB_NAME,
+    `SELECT * FROM queryChannelsMap where id = ?`,
+    [query],
+  );
+
+  if (status === 1) {
+    console.error(`Querying for queryChannelsMap failed: ${message}`);
+  }
+
+  const results = rows ? rows._array : [];
+
+  const channelIdsStr = results?.[0]?.cids;
+
+  return JSON.parse(channelIdsStr) || [];
+};
+
+const select = (table: Table, fields = '*') => {
   console.log(createCreateTableQuery('channels'));
   openDB();
 
-  const { status, rows, message } = sqlite.executeSql(
+  const { message, rows, status } = sqlite.executeSql(
     DB_NAME,
     `SELECT ${fields}
 FROM ${table};`,

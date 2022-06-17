@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 // RNGR's FlatList ist currently breaking the pull-to-refresh behaviour on Android
 // See https://github.com/software-mansion/react-native-gesture-handler/issues/598
 
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useDerivedAtom, useInitializeDatabaseValues } from '../../store/channels';
 
 import type { Channel } from 'stream-chat';
@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/themeContext/ThemeContext';
 
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { ChannelPreview } from '../ChannelPreview/ChannelPreview';
+import { ChannelListItem } from '../ChannelPreview/ChannelListItem';
 
 const styles = StyleSheet.create({
   flatList: { flex: 1 },
@@ -72,7 +73,7 @@ const renderItem = <
   item,
 }: {
   item: Channel<StreamChatGenerics>;
-}) => <ChannelPreview<StreamChatGenerics> channel={item} />;
+}) => <ChannelListItem channel={item} />;
 
 const keyExtractor = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -143,7 +144,7 @@ const ChannelListMessengerWithContext = <
 
   const ListFooterComponent = () =>
     channels.length && ListHeaderComponent ? <ListHeaderComponent /> : null;
-
+  // console.log('ChannelListMessengerWithContext ', channels);
   return (
     <>
       <FlatList

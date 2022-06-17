@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+
 import { atom, useAtom } from 'jotai';
 import { splitAtom } from 'jotai/utils';
 import {
@@ -8,19 +9,21 @@ import {
   ReadResponse,
   StreamChat,
 } from 'stream-chat';
-import type { ChannelNew } from '../components/ChannelPreview/ChannelPreview';
+
 import {
+  createInsertQuery,
+  executeQueries,
+  initializeDatabase,
   PreparedQueries,
   selectChannels,
-  createInsertQuery,
-  initializeDatabase,
-  executeQueries,
   selectMessages,
 } from './database';
 
+import type { ChannelNew } from '../components/ChannelPreview/ChannelPreview';
+
 type ChannelID = string;
 
-const baseAtom = atom<ChannelNew[]>(selectChannels());
+export const baseAtom = atom<ChannelNew[]>([]);
 const baseMessagesAtom = atom<MessageResponse[]>(selectMessages());
 
 export const useChannelMessagesAtom = (cid: string) => {
@@ -69,31 +72,40 @@ export const useInitializeDatabaseValues = () => {
   }, []);
 };
 
-const derivedAtom = atom<ChannelNew[]>(
+const derivedAtom = atom<{ channels: ChannelNew[]; query: string }>(
   (get) => get(baseAtom),
   (get, set, update) => {
     const nextValue = typeof update === 'function' ? update(get(baseAtom)) : update;
 
     initializeDatabase();
-    set(baseAtom, nextValue);
+    set(baseAtom, nextValue.channels);
 
-    let queries: PreparedQueries[] = [];
-    for (let channel of nextValue) {
-      const { id, cid, name, messages } = channel;
-      queries.push(createInsertQuery('channels', [id, cid, name || '']) as PreparedQueries);
+    const channels = nextValue.channels;
+    const channelIds = channels.map((channel) => channel.cid);
+    const query = nextValue.query;
 
-      if (messages !== undefined) {
-        const messagesToUpsert = messages.map((message: MessageResponse) => {
-          return createInsertQuery('messages', [message.id, cid || '', message.text || '']);
-        });
-        queries.push(...messagesToUpsert);
+    // Update the database only if the query is provided.
+    if (query) {
+      const queries: PreparedQueries[] = [];
+      queries.push(createInsertQuery('queryChannelsMap', [query, JSON.stringify(channelIds)]));
+      for (const channel of channels) {
+        const { cid, id, messages, name } = channel;
+        queries.push(createInsertQuery('channels', [id, cid, name || '']) as PreparedQueries);
+
+        if (messages !== undefined) {
+          const messagesToUpsert = messages.map((message: MessageResponse) =>
+            createInsertQuery('messages', [message.id, cid || '', message.text || '']),
+          );
+          queries.push(...messagesToUpsert);
+        }
       }
+      executeQueries(queries);
+      console.log({ channelsLength: queries.length });
     }
-    executeQueries(queries);
   },
 );
 
-const channelsAtom = splitAtom(derivedAtom, (item) => item.cid);
+export const channelsAtom = splitAtom(derivedAtom, (item) => item.cid);
 
 export const messagesAtom = atom<Record<ChannelID, MessageResponse>>({});
 

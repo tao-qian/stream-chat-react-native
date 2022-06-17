@@ -76,9 +76,9 @@ const ChannelPreviewWithContext = <
   const [lastMessage, setLastMessage] = useState<MessageResponse>(messages[messages.length - 1]);
 
   const [forceUpdate, setForceUpdate] = useState(0);
-  const unread = channel.unreadCount;
+  // const unread = channel.unreadCount;
 
-  const latestMessagePreview = useLatestMessagePreview(channel, forceUpdate);
+  // const latestMessagePreview = useLatestMessagePreview(channel, forceUpdate);
   // console.log({ cid: channel.cid });
 
   // I don't think these are necessary anymore, we can make lastMessage an atom, and update that
@@ -139,7 +139,7 @@ const ChannelPreviewWithContext = <
   //   // return () => channel.off('message.read', handleReadEvent);
   // }, []);
 
-  return <Preview channel={channel} latestMessagePreview={latestMessagePreview} unread={unread} />;
+  return <Preview channel={channel} />;
 };
 
 export type ChannelPreviewProps<

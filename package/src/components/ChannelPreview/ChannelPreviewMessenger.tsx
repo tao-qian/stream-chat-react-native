@@ -160,7 +160,7 @@ const ChannelPreviewMessengerWithContext = <
           <PreviewTitle channel={channel} displayName={displayName} />
           <View style={[styles.statusContainer, row]}>
             <PreviewMutedStatus channel={channel} muted={isChannelMuted} />
-            <PreviewUnreadCount channel={channel} maxUnreadCount={maxUnreadCount} unread={unread} />
+            {/* <PreviewUnreadCount channel={channel} maxUnreadCount={maxUnreadCount} unread={unread} /> */}
           </View>
         </View>
         <View style={[styles.row, row]}>

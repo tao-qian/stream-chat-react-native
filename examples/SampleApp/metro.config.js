@@ -17,5 +17,5 @@ module.exports = {
   },
   watchFolders: [projectRoot]
     .concat(alternateRoots)
-    .concat(['/Users/madsroskar/code/stream/chat/react-native/stream-chat-js']),
+    .concat(['/Users/vishalnarkhede/projects/stream-chat-js']),
 };
