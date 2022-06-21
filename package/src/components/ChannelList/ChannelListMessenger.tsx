@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 // See https://github.com/software-mansion/react-native-gesture-handler/issues/598
 
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { useDerivedAtom, useInitializeDatabaseValues } from '../../store/channels';
-
+import { channelsAtom, useDerivedAtom, useInitializeDatabaseValues } from '../../store/channels';
+import { useAtom } from 'jotai';
 import type { Channel } from 'stream-chat';
 
 import {
@@ -112,7 +112,7 @@ const ChannelListMessengerWithContext = <
       colors: { white_snow },
     },
   } = useTheme();
-
+  const [channelsAtoms, setChannel] = useAtom(channelsAtom);
   /**
    * In order to prevent the EmptyStateIndicator component from showing up briefly on mount,
    * we set the loading state one cycle behind to ensure the channels are set before the
@@ -153,7 +153,7 @@ const ChannelListMessengerWithContext = <
           { backgroundColor: white_snow },
           flatListContent,
         ]}
-        data={channels}
+        data={channelsAtoms}
         extraData={forceUpdate}
         keyExtractor={keyExtractor}
         ListEmptyComponent={

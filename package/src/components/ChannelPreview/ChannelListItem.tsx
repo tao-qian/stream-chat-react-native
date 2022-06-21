@@ -1,19 +1,24 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useAtom } from 'jotai';
+
 import { ChannelAvatar } from './ChannelAvatar';
 import type { ChannelNew, ChannelPreviewProps } from './ChannelPreview';
 import { ChannelPreviewMessage } from './ChannelPreviewMessage';
+import { ChannelPreviewMessenger } from './ChannelPreviewMessenger';
 import { ChannelPreviewMutedStatus } from './ChannelPreviewMutedStatus';
 import { ChannelPreviewStatus } from './ChannelPreviewStatus';
 import { ChannelPreviewTitle } from './ChannelPreviewTitle';
 import { ChannelPreviewUnreadCount } from './ChannelPreviewUnreadCount';
 import { useChannelPreviewDisplayName } from './hooks/useChannelPreviewDisplayName';
 
-import { useTheme } from '../../contexts/themeContext/ThemeContext';
-import { vw } from '../../utils/utils';
 import { useLatestMessagePreview } from './hooks/useLatestMessagePreview';
 
+import { useChatContext } from '../../contexts/chatContext/ChatContext';
+import { useTheme } from '../../contexts/themeContext/ThemeContext';
+import { storeMessage } from '../../store/database';
+import { vw } from '../../utils/utils';
 const maxWidth = vw(80) - 16 - 40;
 
 const styles = StyleSheet.create({
@@ -45,60 +50,25 @@ export const ChannelListItem = (props) => {
     formatLatestMessageDate,
     maxUnreadCount,
     onSelect,
-    PreviewAvatar = ChannelAvatar,
-    PreviewMessage = ChannelPreviewMessage,
-    PreviewStatus = ChannelPreviewStatus,
-    PreviewTitle = ChannelPreviewTitle,
-    PreviewUnreadCount = ChannelPreviewUnreadCount,
-    PreviewMutedStatus = ChannelPreviewMutedStatus,
+    Preview = ChannelPreviewMessenger,
     unread,
   } = props;
-  const messages = channel.messages;
-  const {
-    theme: {
-      channelPreview: { container, contentContainer, row, title },
-      colors: { border, white_snow },
-    },
-  } = useTheme();
+  const [channelAtom, setChannel] = useAtom(channel);
+  const { client } = useChatContext();
 
-  const displayName =
-    useChannelPreviewDisplayName(
-      channel,
-      Math.floor(maxWidth / ((title.fontSize || styles.title.fontSize) / 2)),
-    ) || 'Unnamed channel'; // TODO: remove, just for testing till members are available
-  const latestMessagePreview = useLatestMessagePreview(channel);
+  const latestMessagePreview = useLatestMessagePreview(channelAtom);
+  console.log('re-rendering channel list item', channelAtom.id);
+  useEffect(() => {
+    client.on('message.new', (event) => {
+      if (event.cid === channelAtom.cid) {
+        setChannel({
+          ...channelAtom,
+          messages: [...channelAtom.messages, event.message],
+        });
+        storeMessage(event.message);
+      }
+    });
+  }, []);
 
-  return (
-    <TouchableOpacity
-      onPress={() => {}}
-      style={[
-        styles.container,
-        { backgroundColor: white_snow, borderBottomColor: border },
-        container,
-      ]}
-      testID='channel-preview-button'
-    >
-      <PreviewAvatar channel={channel} />
-      <View
-        style={[styles.contentContainer, contentContainer]}
-        testID={`channel-preview-content-${channel.id}`}
-      >
-        <View style={[styles.row, row]}>
-          <PreviewTitle channel={channel} displayName={displayName} />
-          <View style={[styles.statusContainer, row]}>
-            <PreviewMutedStatus channel={channel} muted={'isChannelMuted'} />
-            {/* <PreviewUnreadCount channel={channel} maxUnreadCount={maxUnreadCount} unread={unread} /> */}
-          </View>
-        </View>
-        <View style={[styles.row, row]}>
-          <PreviewMessage latestMessagePreview={latestMessagePreview} />
-          {/* <PreviewStatus
-            channel={channel}
-            formatLatestMessageDate={formatLatestMessageDate}
-            latestMessagePreview={latestMessagePreview}
-          /> */}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  return <Preview channel={channelAtom} latestMessagePreview={latestMessagePreview} />;
 };

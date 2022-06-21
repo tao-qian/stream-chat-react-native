@@ -192,7 +192,7 @@ const getLatestMessagePreview = <
     created_at: getLatestMessageDisplayDate(message, tDateTimeParser),
     messageObject: message,
     previews: getLatestMessageDisplayText(channel, client, message, t),
-    status: getLatestMessageReadStatus(channel, client, message, readEvents),
+    // status: getLatestMessageReadStatus(channel, client, message, readEvents),
   };
 };
 
@@ -240,12 +240,12 @@ export const useLatestMessagePreview = <
     status: MessageReadStatus.NOT_SENT_BY_CURRENT_USER,
   });
 
-  const readStatus = getLatestMessageReadStatus(
-    channel,
-    client,
-    lastMessage || message,
-    readEvents,
-  );
+  // const readStatus = getLatestMessageReadStatus(
+  //   channel,
+  //   client,
+  //   lastMessage || message,
+  //   readEvents,
+  // );
 
   useEffect(() => {
     if (channelConfigExists) {
@@ -268,7 +268,7 @@ export const useLatestMessagePreview = <
           tDateTimeParser,
         }),
       ),
-    [channelLastMessageString, forceUpdate, readEvents, readStatus],
+    [channelLastMessageString, forceUpdate, readEvents],
   );
 
   return latestMessagePreview;

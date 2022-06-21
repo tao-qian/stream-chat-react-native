@@ -31,7 +31,7 @@ import {
   ChannelsProvider,
 } from '../../contexts/channelsContext/ChannelsContext';
 import { useChatContext } from '../../contexts/chatContext/ChatContext';
-import { useChannelsAtom } from '../../store/channels';
+import { channelsAtom, useChannelsAtom, useDerivedAtom } from '../../store/channels';
 import type { DefaultStreamChatGenerics } from '../../types/types';
 import { ChannelPreviewMessenger } from '../ChannelPreview/ChannelPreviewMessenger';
 import { EmptyStateIndicator as EmptyStateIndicatorDefault } from '../Indicators/EmptyStateIndicator';
@@ -249,6 +249,8 @@ export const ChannelList = <
   const { client } = useChatContext();
 
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [channels, setChannels] = useDerivedAtom();
+  const [channelsAtoms, dispatch] = useAtom(channelsAtom);
 
   // const db = sqlite.open('scrn', 'databases');
 
@@ -257,7 +259,6 @@ export const ChannelList = <
   // }
 
   const {
-    channels,
     error,
     hasNextPage,
     loadingChannels,
@@ -279,6 +280,17 @@ export const ChannelList = <
   // const [someChannel] = useAtom(channels[2]);
   // const [unread, setUnread] = useAtom(someChannel.unreadCount);
 
+  // useEffect(() => {
+  //   client.on('message.new', (event) => {
+  //     if (event.cid === channelAtom.cid) {
+  //       setChannels({
+  //         ...channelAtom,
+  //         messages: [...channelAtom.messages, event.message],
+  //       });
+  //       storeMessage(event.message);
+  //     }
+  //   });
+  // }, []);
   const channelsContext = useCreateChannelsContext({
     additionalFlatListProps,
     channels,

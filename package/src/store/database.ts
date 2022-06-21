@@ -178,6 +178,33 @@ const getChannelIdsForQuery = (query: string): string[] => {
   return JSON.parse(channelIdsStr) || [];
 };
 
+export const storeChannels = (query: string, channels: ChannelNew[]) => {
+  // Update the database only if the query is provided.
+  const channelIds = channels.map((channel) => channel.cid);
+  if (query) {
+    const queries: PreparedQueries[] = [];
+    queries.push(createInsertQuery('queryChannelsMap', [query, JSON.stringify(channelIds)]));
+    for (const channel of channels) {
+      const { cid, id, messages, name } = channel;
+      queries.push(createInsertQuery('channels', [id, cid, name || '']) as PreparedQueries);
+
+      if (messages !== undefined) {
+        const messagesToUpsert = messages.map((message: MessageResponse) =>
+          createInsertQuery('messages', [message.id, cid || '', message.text || '']),
+        );
+        queries.push(...messagesToUpsert);
+      }
+    }
+    executeQueries(queries);
+    console.log({ channelsLength: queries.length });
+  }
+};
+
+export const storeMessage = (message) => {
+  const query = createInsertQuery('messages', [message.id, message.cid || '', message.text || '']);
+  executeQueries([query]);
+};
+
 const select = (table: Table, fields = '*') => {
   console.log(createCreateTableQuery('channels'));
   openDB();

@@ -76,32 +76,9 @@ const derivedAtom = atom<{ channels: ChannelNew[]; query: string }>(
   (get) => get(baseAtom),
   (get, set, update) => {
     const nextValue = typeof update === 'function' ? update(get(baseAtom)) : update;
-
+    console.log('calling setting for channels')
     initializeDatabase();
-    set(baseAtom, nextValue.channels);
-
-    const channels = nextValue.channels;
-    const channelIds = channels.map((channel) => channel.cid);
-    const query = nextValue.query;
-
-    // Update the database only if the query is provided.
-    if (query) {
-      const queries: PreparedQueries[] = [];
-      queries.push(createInsertQuery('queryChannelsMap', [query, JSON.stringify(channelIds)]));
-      for (const channel of channels) {
-        const { cid, id, messages, name } = channel;
-        queries.push(createInsertQuery('channels', [id, cid, name || '']) as PreparedQueries);
-
-        if (messages !== undefined) {
-          const messagesToUpsert = messages.map((message: MessageResponse) =>
-            createInsertQuery('messages', [message.id, cid || '', message.text || '']),
-          );
-          queries.push(...messagesToUpsert);
-        }
-      }
-      executeQueries(queries);
-      console.log({ channelsLength: queries.length });
-    }
+    set(baseAtom, nextValue);
   },
 );
 

@@ -24,7 +24,7 @@ import {
   useMessagesAtom,
   useWriteChannelsAtom,
 } from '../../../store/channels';
-import { selectChannels } from '../../../store/database';
+import { selectChannels, storeChannels } from '../../../store/database';
 import type { DefaultStreamChatGenerics } from '../../../types/types';
 import { ONE_SECOND_IN_MS } from '../../../utils/date';
 import { MAX_QUERY_CHANNELS_LIMIT } from '../utils';
@@ -126,10 +126,8 @@ export const usePaginatedChannels = <
       const newChannels =
         queryType === 'loadChannels' ? [...channels, ...channelsInResponse] : channelsInResponse;
       console.log('STORING THE CHANNELS ', newChannels.length);
-      setChannels({
-        channels: newChannels,
-        query: convertToQuery(filters, sort),
-      });
+      setChannels(newChannels);
+      storeChannels(convertToQuery(filters, sort), newChannels);
       setHasNextPage(channelsInResponse.length >= newOptions.limit);
       setError(undefined);
       isQueryingRef.current = false;
@@ -195,7 +193,7 @@ export const usePaginatedChannels = <
   const sortStr = useMemo(() => JSON.stringify(sort), [sort]);
 
   useEffect(() => {
-    console.log('>>>>>>>>>>>>>>>>> ', client?.user)
+    console.log('>>>>>>>>>>>>>>>>> ', client?.user);
     if (client?.user) {
       console.log('useEffect', client?.user);
       console.log('FILTERS: ', filters);
@@ -203,9 +201,7 @@ export const usePaginatedChannels = <
       //   channels: selectChannels(convertToQuery(filters, sort))
       // })
       const channelsFromDB = selectChannels(convertToQuery(filters, sort));
-      setChannels({
-        channels: channelsFromDB,
-      });
+      setChannels(channelsFromDB);
       console.log('usePaginatedChannels - ', channelsFromDB);
       reloadList();
       console.log('Reload called');
