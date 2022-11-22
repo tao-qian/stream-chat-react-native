@@ -157,6 +157,10 @@ const ThreadScreen: React.FC<ThreadScreenProps> = ({ navigation }) => {
     });
   }, [overlay]);
 
+  if (channel === undefined) {
+    return null;
+  }
+
   return (
     <SafeAreaView>
       <Channel channel={channel} keyboardVerticalOffset={headerHeight} thread={thread} threadList>
