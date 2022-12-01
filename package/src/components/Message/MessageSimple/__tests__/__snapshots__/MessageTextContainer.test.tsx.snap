@@ -8,8 +8,8 @@ exports[`MessageTextContainer should render message text container 1`] = `
         "maxWidth": 250,
         "paddingHorizontal": 16,
       },
-      Object {},
       undefined,
+      Object {},
     ]
   }
   testID="message-text-container"

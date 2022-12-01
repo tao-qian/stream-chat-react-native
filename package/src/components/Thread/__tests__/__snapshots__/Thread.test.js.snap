@@ -386,8 +386,8 @@ exports[`Thread should match thread snapshot 1`] = `
                                     "maxWidth": 250,
                                     "paddingHorizontal": 16,
                                   },
-                                  Object {},
                                   undefined,
+                                  Object {},
                                 ]
                               }
                               testID="message-text-container"
@@ -635,8 +635,8 @@ exports[`Thread should match thread snapshot 1`] = `
                                     "maxWidth": 250,
                                     "paddingHorizontal": 16,
                                   },
-                                  Object {},
                                   undefined,
+                                  Object {},
                                 ]
                               }
                               testID="message-text-container"
@@ -884,8 +884,8 @@ exports[`Thread should match thread snapshot 1`] = `
                                     "maxWidth": 250,
                                     "paddingHorizontal": 16,
                                   },
-                                  Object {},
                                   undefined,
+                                  Object {},
                                 ]
                               }
                               testID="message-text-container"
@@ -1181,8 +1181,8 @@ exports[`Thread should match thread snapshot 1`] = `
                                       "maxWidth": 250,
                                       "paddingHorizontal": 16,
                                     },
-                                    Object {},
                                     undefined,
+                                    Object {},
                                   ]
                                 }
                                 testID="message-text-container"
