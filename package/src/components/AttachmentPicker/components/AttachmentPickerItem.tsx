@@ -3,13 +3,13 @@ import React from 'react';
 import { Alert, ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 import { TouchableOpacity } from '@gorhom/bottom-sheet';
-import dayjs from 'dayjs';
 import { lookup } from 'mime-types';
 
 import { useTheme } from '../../../contexts/themeContext/ThemeContext';
 import { Recorder } from '../../../icons';
 import { getLocalAssetUri } from '../../../native';
 import type { Asset, File } from '../../../types/types';
+import { getDurationLabelFromDurationInSeconds } from '../../../utils/getDurationLabelFromDurationInSeconds';
 import { vw } from '../../../utils/utils';
 
 type AttachmentPickerItemType = {
@@ -49,18 +49,7 @@ const AttachmentVideo: React.FC<AttachmentVideoProps> = (props) => {
 
   const videoDuration = duration ? duration : playableDuration;
 
-  const ONE_HOUR_IN_SECONDS = 3600;
-
-  let durationLabel = '00:00';
-
-  if (videoDuration) {
-    const isDurationLongerThanHour = videoDuration / ONE_HOUR_IN_SECONDS >= 1;
-    const formattedDurationParam = isDurationLongerThanHour ? 'HH:mm:ss' : 'mm:ss';
-    const formattedVideoDuration = dayjs
-      .duration(videoDuration, 'second')
-      .format(formattedDurationParam);
-    durationLabel = formattedVideoDuration;
-  }
+  const durationLabel = getDurationLabelFromDurationInSeconds(videoDuration);
 
   const size = vw(100) / (numberOfAttachmentPickerImageColumns || 3) - 2;
 
@@ -78,7 +67,7 @@ const AttachmentVideo: React.FC<AttachmentVideoProps> = (props) => {
         return [
           ...files,
           {
-            duration: durationLabel,
+            duration: videoDuration,
             name: asset.filename,
             size: asset.fileSize,
             type: 'video',

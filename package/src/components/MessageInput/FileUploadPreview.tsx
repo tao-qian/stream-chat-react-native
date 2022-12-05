@@ -18,6 +18,7 @@ import { Close } from '../../icons/Close';
 import { Warning } from '../../icons/Warning';
 import { isAudioPackageAvailable } from '../../native';
 import type { DefaultStreamChatGenerics } from '../../types/types';
+import { getDurationLabelFromDurationInSeconds } from '../../utils/getDurationLabelFromDurationInSeconds';
 import { FileState, getIndicatorTypeForFileState, ProgressIndicatorTypes } from '../../utils/utils';
 import { getFileSizeDisplayText } from '../Attachment/FileAttachment';
 import { WritingDirectionAwareText } from '../RTLComponents/WritingDirectionAwareText';
@@ -99,6 +100,9 @@ const UnsupportedFileTypeOrFileSizeIndicator = ({
     },
   } = useTheme();
 
+  const videoDuration = item.file.duration;
+  const durationLabel = getDurationLabelFromDurationInSeconds(videoDuration);
+
   const { t } = useTranslationContext();
 
   return indicatorType === ProgressIndicatorTypes.NOT_SUPPORTED ? (
@@ -115,7 +119,7 @@ const UnsupportedFileTypeOrFileSizeIndicator = ({
     </View>
   ) : (
     <WritingDirectionAwareText style={[styles.fileSizeText, { color: grey }, fileSizeText]}>
-      {item.file.duration || getFileSizeDisplayText(item.file.size)}
+      {durationLabel || getFileSizeDisplayText(item.file.size)}
     </WritingDirectionAwareText>
   );
 };

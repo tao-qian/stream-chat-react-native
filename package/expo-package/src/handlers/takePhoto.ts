@@ -1,9 +1,10 @@
 import { Image, Platform } from 'react-native';
+
 import * as ImagePicker from 'expo-image-picker';
 
 type Size = {
-  width?: number;
   height?: number;
+  width?: number;
 };
 
 export const takePhoto = async ({ compressImageQuality = 1 }) => {
@@ -15,11 +16,17 @@ export const takePhoto = async ({ compressImageQuality = 1 }) => {
         : await ImagePicker.requestCameraPermissionsAsync();
 
     if (permissionGranted?.status === 'granted' || permissionGranted?.granted === true) {
-      const photo = await ImagePicker.launchCameraAsync({
+      const attachment = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         quality: Math.min(Math.max(0, compressImageQuality), 1),
       });
 
-      if (photo.cancelled === false && photo.height && photo.width && photo.uri) {
+      if (
+        attachment.cancelled === false &&
+        attachment.height &&
+        attachment.width &&
+        attachment.uri
+      ) {
         let size: Size = {};
         if (Platform.OS === 'android') {
           // Height and width returned by ImagePicker are incorrect on Android.
@@ -29,9 +36,11 @@ export const takePhoto = async ({ compressImageQuality = 1 }) => {
           // to get accurate size.
           const getSize = (): Promise<Size> =>
             new Promise((resolve) => {
-              Image.getSize(photo.uri, (width, height) => {
-                resolve({ height, width });
-              });
+              if (attachment.uri) {
+                return Image.getSize(attachment?.uri, (width, height) => {
+                  resolve({ height, width });
+                });
+              }
             });
 
           try {
@@ -43,17 +52,35 @@ export const takePhoto = async ({ compressImageQuality = 1 }) => {
           }
         } else {
           size = {
-            height: photo.height,
-            width: photo.width,
+            height: attachment.height,
+            width: attachment.width,
           };
         }
 
-        return {
-          cancelled: false,
-          source: 'camera',
-          uri: photo.uri,
-          ...size,
-        };
+        if (attachment.type === 'image') {
+          return {
+            cancelled: false,
+            source: 'camera',
+            type: attachment.type,
+            uri: attachment.uri,
+            ...size,
+          };
+        } else {
+          return {
+            cancelled: false,
+            file: {
+              duration: attachment.duration ? attachment.duration / 1000 : 0,
+              name: attachment.fileName,
+              size: attachment.fileSize,
+              type:
+                Platform.OS === 'ios' ? `${attachment.type}/quicktime` : `${attachment.type}/mp4`,
+              uri: attachment.uri,
+            },
+            source: 'camera',
+            type: attachment.type,
+            ...size,
+          };
+        }
       }
     }
   } catch (error) {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
+import dayjs from 'dayjs';
+
 import { useAttachmentPickerContext } from '../../../contexts/attachmentPickerContext/AttachmentPickerContext';
 import { useMessageInputContext } from '../../../contexts/messageInputContext/MessageInputContext';
 import { useTheme } from '../../../contexts/themeContext/ThemeContext';
@@ -26,6 +28,7 @@ export const AttachmentSelectionBar: React.FC = () => {
     FileSelectorIcon,
     ImageSelectorIcon,
     selectedPicker,
+    setSelectedFiles,
     setSelectedImages,
     setSelectedPicker,
   } = useAttachmentPickerContext();
@@ -56,9 +59,14 @@ export const AttachmentSelectionBar: React.FC = () => {
   const takeAndUploadImage = async () => {
     setSelectedPicker(undefined);
     closePicker();
-    const photo = await takePhoto({ compressImageQuality });
-    if (!photo.cancelled) {
-      setSelectedImages((images) => [...images, photo]);
+    const attachment = await takePhoto({ compressImageQuality });
+    if (!attachment.cancelled) {
+      if (attachment.type === 'image') {
+        setSelectedImages((images) => [...images, attachment]);
+      } else {
+        attachment.file.name = `video_${dayjs(new Date()).format('DDMMYYYY_HHMMss')}`;
+        setSelectedFiles((files) => [...files, attachment.file]);
+      }
     }
   };
 

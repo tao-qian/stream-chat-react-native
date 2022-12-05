@@ -16,7 +16,7 @@ export type Asset = {
 
 export type File = {
   name: string;
-  duration?: string | null;
+  duration?: number | null;
   size?: number | string;
   type?: string;
   uri?: string;

@@ -76,13 +76,14 @@ type ShareOptions = {
 type ShareImage = (options: ShareOptions) => Promise<boolean> | never;
 export let shareImage: ShareImage = fail;
 
-type Photo =
+type CameraAttachment =
   | (Omit<Asset, 'source'> & {
       cancelled: false;
+      file: File;
       source: 'camera';
     })
   | { cancelled: true };
-type TakePhoto = (options: { compressImageQuality?: number }) => Promise<Photo> | never;
+type TakePhoto = (options: { compressImageQuality?: number }) => Promise<CameraAttachment> | never;
 export let takePhoto: TakePhoto = fail;
 
 type HapticFeedbackMethod =
