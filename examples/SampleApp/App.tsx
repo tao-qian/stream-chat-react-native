@@ -184,7 +184,7 @@ const DrawerNavigatorWrapper: React.FC<{
       <OverlayProvider<StreamChatGenerics> bottomInset={bottom} value={{ style: streamChatTheme }}>
         <Chat<StreamChatGenerics>
           client={chatClient}
-          enableOfflineSupport
+          enableOfflineSupport={false}
           // @ts-expect-error
           ImageComponent={FastImage}
         >
