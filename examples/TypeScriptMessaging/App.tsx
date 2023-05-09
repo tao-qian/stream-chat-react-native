@@ -23,6 +23,8 @@ import {
 import { useStreamChatTheme } from './useStreamChatTheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFlipper } from 'stream-chat-react-native-devtools';
+import { QuickSqliteClient } from 'stream-chat-react-native';
+import type { DeepPartial, Theme } from 'stream-chat-react-native';
 
 LogBox.ignoreAllLogs(true);
 
@@ -46,16 +48,15 @@ type StreamChatGenerics = {
 
 I18nManager.forceRTL(false);
 
-const chatClient = StreamChat.getInstance<StreamChatGenerics>('q95x9hkbyd6p');
+const chatClient = StreamChat.getInstance<StreamChatGenerics>('k6zgp3877jra');
 const userToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicm9uIn0.eRVjxLvd4aqCEHY_JRa97g6k7WpHEhxL7Z4K4yTot1c';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiam9zZSJ9.50F8kdyWyIsxx1IQU5t4Sag_rHTqvDPe7jo9_BgFDSI';
 const user = {
-  id: 'ron',
+  id: 'jose',
 };
 
 const filters = {
-  example: 'example-apps',
-  members: { $in: ['ron'] },
+  members: { $in: [user.id] },
   type: 'messaging',
 };
 const sort: ChannelSort<StreamChatGenerics> = { last_message_at: -1 };
@@ -64,6 +65,7 @@ const options = {
   state: true,
   watch: true,
   limit: 30,
+  message_limit: 25,
 };
 
 /**
@@ -124,7 +126,12 @@ const ChannelScreen: React.FC<ChannelScreenProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView>
-      <Channel channel={channel} keyboardVerticalOffset={headerHeight} thread={thread}>
+      <Channel
+        channel={channel}
+        keyboardVerticalOffset={headerHeight}
+        thread={thread}
+        initialScrollToFirstUnreadMessage={true}
+      >
         <View style={{ flex: 1 }}>
           <MessageList<StreamChatGenerics>
             onThreadSelect={(thread) => {
@@ -200,15 +207,31 @@ const App = () => {
   const [clientReady, setClientReady] = useState(false);
   const [thread, setThread] = useState<ThreadContextValue<StreamChatGenerics>['thread']>();
 
+  const customTheme: DeepPartial<Theme> = {
+    messageSimple: {
+      content: {
+        markdown: {
+          mentions: {
+            color: 'red',
+          },
+        },
+      },
+    },
+  };
+
   useEffect(() => {
     const setupClient = async () => {
       await chatClient.connectUser(user, userToken);
-
-      return setClientReady(true);
+      setClientReady(true);
+      return () => {
+        return QuickSqliteClient.resetDB(), chatClient.disconnectUser();
+      };
     };
 
     setupClient();
   }, []);
+
+  if (!clientReady) return null;
 
   return (
     <DebugContextProvider useFlipper={useFlipper}>
@@ -226,7 +249,7 @@ const App = () => {
             <OverlayProvider<StreamChatGenerics>
               bottomInset={bottom}
               i18nInstance={streami18n}
-              value={{ style: theme }}
+              value={{ style: customTheme }}
             >
               <Chat client={chatClient} i18nInstance={streami18n}>
                 {clientReady && (
