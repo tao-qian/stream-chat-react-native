@@ -124,13 +124,13 @@ type Props<StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamC
   ImageGalleryCustomComponents<StreamChatGenerics> & {
     overlayOpacity: Animated.SharedValue<number>;
   } & Pick<
-      OverlayProviderProps<StreamChatGenerics>,
-      | 'giphyVersion'
-      | 'imageGalleryGridSnapPoints'
-      | 'imageGalleryGridHandleHeight'
-      | 'numberOfImageGalleryGridColumns'
-      | 'autoPlayVideo'
-    >;
+    OverlayProviderProps<StreamChatGenerics>,
+    | 'giphyVersion'
+    | 'imageGalleryGridSnapPoints'
+    | 'imageGalleryGridHandleHeight'
+    | 'numberOfImageGalleryGridColumns'
+    | 'autoPlayVideo'
+  >;
 
 export const ImageGallery = <
   StreamChatGenerics extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
@@ -176,8 +176,8 @@ export const ImageGallery = <
       ? 0
       : statusBarHeight
     : bottomBarHeight === statusBarHeight || bottomBarHeight < 0
-    ? -statusBarHeight
-    : 0;
+      ? -statusBarHeight
+      : 0;
   const screenHeight = isAndroid
     ? Dimensions.get('window').height + androidScreenHeightAdjustment
     : vh(100);
@@ -297,10 +297,10 @@ export const ImageGallery = <
           a.type === 'giphy'
             ? giphyURL
             : getResizedImageUrl({
-                height: screenHeight,
-                url: imageUrl,
-                width: screenWidth,
-              }),
+              height: screenHeight,
+              url: imageUrl,
+              width: screenWidth,
+            }),
         user: cur.user,
         user_id: cur.user_id,
       };
@@ -405,10 +405,10 @@ export const ImageGallery = <
         ? 1 - translateY.value / quarterScreenHeight
         : currentImageHeight * scale.value > screenHeight &&
           translateY.value > (currentImageHeight / 2) * scale.value - halfScreenHeight
-        ? 1 -
+          ? 1 -
           (translateY.value - ((currentImageHeight / 2) * scale.value - halfScreenHeight)) /
-            quarterScreenHeight
-        : 1,
+          quarterScreenHeight
+          : 1,
     [currentImageHeight],
   );
 
@@ -647,7 +647,7 @@ export const ImageGallery = <
         {...imageGalleryCustomComponents?.header}
       />
 
-      {imageGalleryAttachments.length > 0 && (
+      {imageGalleryAttachments[selectedIndex] && (
         <ImageGalleryFooter<StreamChatGenerics>
           accessibilityLabel={'Image Gallery Footer'}
           duration={imageGalleryAttachments[selectedIndex].duration || 0}
